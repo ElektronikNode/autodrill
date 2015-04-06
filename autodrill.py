@@ -1,9 +1,10 @@
 
 
 
-from readDrill import *
+from readDrillFile import *
 from bilinear import *
 from findPath import *
+from writeGCode import *
 
 
 # assign holes to drills from given toolbox
@@ -52,19 +53,20 @@ if __name__ == '__main__':
 	newHoles=fitHolesToDrills(allHoles, drills, 0.05)
 	
 	for dia in newHoles:
-		print()
-		print("dia "+str(dia)+":")
-		print(newHoles[dia])
-		print()
+		
+		path=findPath(newHoles[dia])
+		writeGCode(dia, path)
+		#print()
+		#print("dia "+str(dia)+":")
+		#print(newHoles[dia])
+		#print()
 		
 	
 	points = {(0, 0), (1, 0), (0, 1), (1, 1)}
 	#points_t = {(0, 0), (1, 0.1), (-0.1, 1)}
 
 	#path=findPath(points)
-	path=findPath(newHoles[0.8])
-	
-	print(path)
+
 	
 	#T=bilinear(points, points_t)
 	
