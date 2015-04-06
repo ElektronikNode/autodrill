@@ -3,6 +3,7 @@
 
 from readDrill import *
 from bilinear import *
+from findPath import *
 
 
 # assign holes to drills from given toolbox
@@ -57,13 +58,17 @@ if __name__ == '__main__':
 		print()
 		
 	
-	points = {(0, 0), (1, 0), (0, 1)}
-	points_t = {(0, 0), (1, 0.1), (-0.1, 1)}
+	points = {(0, 0), (1, 0), (0, 1), (1, 1)}
+	#points_t = {(0, 0), (1, 0.1), (-0.1, 1)}
 
+	#path=findPath(points)
+	path=findPath(newHoles[0.8])
 	
-	T=bilinear(points, points_t)
+	print(path)
 	
-	p = (0.5, 0.5)
+	#T=bilinear(points, points_t)
+	
+	#p = (0.5, 0.5)
 
-	print(T.transform(p))
+	#print(T.transform(p))
 
