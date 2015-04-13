@@ -6,8 +6,10 @@ from mainwindow import Ui_MainWindow
 from BoardDrillsWidget import BoardDrillsWidget
 from VideoWidget import VideoWidget
 
-from readDrill import *
+from readDrillFile import *
 from bilinear import *
+from findPath import *
+from writeGCode import *
 
 import sys
 
@@ -71,21 +73,26 @@ if __name__ == '__main__':
 	newHoles=fitHolesToDrills(allHoles, drills, 0.05)
 	
 	for dia in newHoles:
-		print()
-		print("dia "+str(dia)+":")
-		print(newHoles[dia])
-		print()
+		
+		path=findPath(newHoles[dia])
+		writeGCode(dia, path)
+		#print()
+		#print("dia "+str(dia)+":")
+		#print(newHoles[dia])
+		#print()
 		
 	
-	points = {(0, 0), (1, 0), (0, 1)}
-	points_t = {(0, 0), (1, 0.1), (-0.1, 1)}
+	points = {(0, 0), (1, 0), (0, 1), (1, 1)}
+	#points_t = {(0, 0), (1, 0.1), (-0.1, 1)}
+
+	#path=findPath(points)
 
 	
-	T=bilinear(points, points_t)
+	#T=bilinear(points, points_t)
 	
-	p = (0.5, 0.5)
+	#p = (0.5, 0.5)
 
-	print(T.transform(p))
+	#print(T.transform(p))
 	
 	app = Qt.QApplication(sys.argv)
 	ui = AutodrillMainWindow()
