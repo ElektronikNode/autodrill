@@ -1,9 +1,31 @@
 
+from PyQt4.QtGui import QMainWindow
+from PyQt4 import Qt
 
+from mainwindow import Ui_MainWindow
+from BoardDrillsWidget import BoardDrillsWidget
+from VideoWidget import VideoWidget
 
 from readDrill import *
 from bilinear import *
 
+import sys
+
+allHoles = None
+
+
+class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
+    def __init__(self):
+        QMainWindow.__init__(self)
+
+        # Set up the user interface from Designer.
+        self.setupUi(self)
+        
+        #self.cameraWidgetObject = VideoWidget()
+        #self.gridLayout.addWidget(self.cameraWidgetObject, 0, 1, 1, 1)
+
+        self.boardDrillsObject = BoardDrillsWidget(allHoles)
+        self.gridLayout.addWidget(self.boardDrillsObject, 0, 0, 2, 1)
 
 # assign holes to drills from given toolbox
 # pick next larger drill except d_hole < d_drill + tol
@@ -40,8 +62,6 @@ def fitHolesToDrills(holes, drills, tol):
 		
 	return newHoles
 
-
-
 if __name__ == '__main__':
 	
 	allHoles=readDrillFile("test.drl")
@@ -66,4 +86,10 @@ if __name__ == '__main__':
 	p = (0.5, 0.5)
 
 	print(T.transform(p))
+	
+	app = Qt.QApplication(sys.argv)
+	ui = AutodrillMainWindow()
+	ui.show()
+	
+	sys.exit(app.exec_())
 
