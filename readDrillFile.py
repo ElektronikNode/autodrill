@@ -4,7 +4,7 @@ import re
 # read .drl file (excellon format)
 # return value:
 #	dictionary from drill diameter to set X/Y-coordinates
-#	e.g.: {d1 -> {(x1, y1), (x2, y2), ...}, d2 -> {(x3, y3), (x4, y4), ...}, ...}
+#	e.g.: {d1 -> {(x1, y1, ID1), (x2, y2, ID2), ...}, d2 -> {(x3, y3, ID3), (x4, y4, ID4), ...}, ...}
 
 def readDrillFile(filename):
 	try:
@@ -16,6 +16,8 @@ def readDrillFile(filename):
 	
 	tools={}
 	holes={}
+	
+	ID=0
 	
 	for line in drillfile:
 		
@@ -41,7 +43,9 @@ def readDrillFile(filename):
 		mo=re.search(r"^X(-?\d+.\d+)Y(-?\d+.\d+)$", line)
 		if mo and currentTool in tools:
 			
-			holes[tools[currentTool]].add((float(mo.group(1)), float(mo.group(2))))
+			holes[tools[currentTool]].add((float(mo.group(1)), float(mo.group(2)), ID))
+			
+		ID=ID+1
 	
 	
 	return holes

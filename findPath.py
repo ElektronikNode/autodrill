@@ -1,26 +1,28 @@
 
 import math
+from copy import copy
 
 # find a (short) path through the set of points
 def findPath(points):
 	
-	path=[points.pop()]		# start with a random point
+	mypoints=copy(points)		# make local copy	
+	path=[mypoints.pop()]		# start with a random point
 	
 	
-	while points:
+	while mypoints:
 	
 		# find the next point using nearest neighbour search
 		
 		base=path[-1]			# last path point is base point for NN search
 		mindist=float("inf")	# minimal distance
 		
-		for p in points:
+		for p in mypoints:
 			if distance(base, p) < mindist:
 				mindist = distance(base, p)
 				bestPoint = p
 		
 		path.append(bestPoint)		# append nearest point to path
-		points.remove(bestPoint)
+		mypoints.remove(bestPoint)
 		
 	return path
 

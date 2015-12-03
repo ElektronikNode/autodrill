@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>793</width>
-    <height>600</height>
+    <width>942</width>
+    <height>653</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
+    <item row="0" column="1" colspan="2">
      <widget class="QWidget" name="cameraWidget" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -36,12 +36,73 @@
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QTreeWidget" name="treeWidget">
+     <widget class="QTreeWidget" name="treeWidget_holes">
       <column>
        <property name="text">
         <string notr="true">1</string>
        </property>
       </column>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>Transformation</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QPushButton" name="pushButton_startNextTrafo">
+         <property name="text">
+          <string>Start</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_finishTrafo">
+         <property name="text">
+          <string>Finish</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Please select 2..4 points.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Points used:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_trafoPoints">
+           <property name="text">
+            <string>0</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>138</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>
@@ -51,22 +112,40 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>793</width>
+     <width>942</width>
      <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
-    <addaction name="actionLoad_drill_file"/>
+    <addaction name="action_loadDrillFile"/>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>S&amp;ettings</string>
+    </property>
+    <addaction name="action_drillsDialog"/>
+    <addaction name="action_cameraOffset"/>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionLoad_drill_file">
+  <action name="action_loadDrillFile">
    <property name="text">
-    <string>load drill file</string>
+    <string>&amp;Load Drill File</string>
+   </property>
+  </action>
+  <action name="action_drillsDialog">
+   <property name="text">
+    <string>&amp;Drills</string>
+   </property>
+  </action>
+  <action name="action_cameraOffset">
+   <property name="text">
+    <string>Camera Offset</string>
    </property>
   </action>
  </widget>
