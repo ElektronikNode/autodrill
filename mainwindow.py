@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Thu Dec  3 09:22:19 2015
+# Created: Fri Dec 11 18:53:26 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -55,12 +55,12 @@ class Ui_MainWindow(object):
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.verticalLayout = QtGui.QVBoxLayout(self.groupBox)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
-        self.pushButton_startNextTrafo = QtGui.QPushButton(self.groupBox)
-        self.pushButton_startNextTrafo.setObjectName(_fromUtf8("pushButton_startNextTrafo"))
-        self.verticalLayout.addWidget(self.pushButton_startNextTrafo)
-        self.pushButton_finishTrafo = QtGui.QPushButton(self.groupBox)
-        self.pushButton_finishTrafo.setObjectName(_fromUtf8("pushButton_finishTrafo"))
-        self.verticalLayout.addWidget(self.pushButton_finishTrafo)
+        self.pushButton_addPoint = QtGui.QPushButton(self.groupBox)
+        self.pushButton_addPoint.setObjectName(_fromUtf8("pushButton_addPoint"))
+        self.verticalLayout.addWidget(self.pushButton_addPoint)
+        self.pushButton_removeAll = QtGui.QPushButton(self.groupBox)
+        self.pushButton_removeAll.setObjectName(_fromUtf8("pushButton_removeAll"))
+        self.verticalLayout.addWidget(self.pushButton_removeAll)
         self.label_2 = QtGui.QLabel(self.groupBox)
         self.label_2.setObjectName(_fromUtf8("label_2"))
         self.verticalLayout.addWidget(self.label_2)
@@ -106,8 +106,8 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "auto drill", None))
         self.groupBox.setTitle(_translate("MainWindow", "Transformation", None))
-        self.pushButton_startNextTrafo.setText(_translate("MainWindow", "Start", None))
-        self.pushButton_finishTrafo.setText(_translate("MainWindow", "Finish", None))
+        self.pushButton_addPoint.setText(_translate("MainWindow", "Add Selected Point", None))
+        self.pushButton_removeAll.setText(_translate("MainWindow", "Remove All", None))
         self.label_2.setText(_translate("MainWindow", "Please select 2..4 points.", None))
         self.label.setText(_translate("MainWindow", "Points used:", None))
         self.label_trafoPoints.setText(_translate("MainWindow", "0", None))
@@ -115,5 +115,5 @@ class Ui_MainWindow(object):
         self.menuSettings.setTitle(_translate("MainWindow", "S&ettings", None))
         self.action_loadDrillFile.setText(_translate("MainWindow", "&Load Drill File", None))
         self.action_drillsDialog.setText(_translate("MainWindow", "&Drills", None))
-        self.action_cameraOffset.setText(_translate("MainWindow", "Camera Offset", None))
+        self.action_cameraOffset.setText(_translate("MainWindow", "&Camera Offset", None))
 

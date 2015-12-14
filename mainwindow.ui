@@ -51,16 +51,16 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QPushButton" name="pushButton_startNextTrafo">
+        <widget class="QPushButton" name="pushButton_addPoint">
          <property name="text">
-          <string>Start</string>
+          <string>Add Selected Point</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_finishTrafo">
+        <widget class="QPushButton" name="pushButton_removeAll">
          <property name="text">
-          <string>Finish</string>
+          <string>Remove All</string>
          </property>
         </widget>
        </item>
@@ -145,7 +145,7 @@
   </action>
   <action name="action_cameraOffset">
    <property name="text">
-    <string>Camera Offset</string>
+    <string>&amp;Camera Offset</string>
    </property>
   </action>
  </widget>

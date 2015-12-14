@@ -22,28 +22,36 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 	def __init__(self):
 		QMainWindow.__init__(self)
 		
-		self.rawHoles = {}
-		self.fitHoles = {}
+		self.rawHoles = {}		# dictionary: holes sorted by diameter that come from drill file
+		self.fitHoles = {}		# dictionary: holes fitted to available drill diameters
 
-		self.drills={0.6, 0.8, 1.1, 1.3, 1.5, 1.7, 2.0}
+		self.drills={0.6, 0.8, 1.1, 1.3, 1.5, 1.7, 2.0}	# set of available drills
 		
-		self.currentTrafoHole=0
+		self.selectedHoles=list()		# list of selected holes
+		self.trafoPoints=list()			# points used for transformation (file coordinates)
+		self.trafoMachinePoints=list() 	# corresponding machine coordinates
+		
 
 		# Set up the user interface from Designer.
 		self.setupUi(self)
+		
+		self.boardDrillsWidget = BoardDrillsWidget()
+		self.gridLayout.addWidget(self.boardDrillsWidget, 0, 0, 2, 1)
 
 		self.treeWidget_holes.currentItemChanged.connect(self.treeNodeSelected)
+		self.boardDrillsWidget.holeSelected.connect(self.holeSelected)
+		
 		self.action_loadDrillFile.triggered.connect(self.action_loadDrillFile_triggered)
-		self.pushButton_startNextTrafo.clicked.connect(self.startNextTrafo)
-		self.pushButton_finishTrafo.clicked.connect(self.finishTrafo)
+		
+		self.pushButton_addPoint.clicked.connect(self.addTrafoPoint)
+		self.pushButton_removeAll.clicked.connect(self.removeAllTrafoPoints)
+		
 		
 		#self.cameraWidgetObject = VideoWidget()
 		#self.gridLayout.addWidget(self.cameraWidgetObject, 0, 1, 1, 1)
-
-		self.boardDrillsWidget = BoardDrillsWidget()
-		self.gridLayout.addWidget(self.boardDrillsWidget, 0, 0, 2, 1)
 		
-		self.updateHoles()
+		self.updateHolesTable()
+		self.boardDrillsWidget.setAllHoles(self.fitHoles)
 		
 		
 	def action_loadDrillFile_triggered(self):
@@ -52,10 +60,12 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			#print("file: " + filename)
 			self.rawHoles=readDrillFile(filename)
 			self.fitHoles=fitHolesToDrills(self.rawHoles, self.drills, 0.05)
-			self.updateHoles()
+			
+			self.updateHolesTable()
+			self.boardDrillsWidget.setAllHoles(self.fitHoles)
 		
 		
-	def updateHoles(self):
+	def updateHolesTable(self):
 		
 		self.treeWidget_holes.clear()
 		self.treeWidget_holes.setColumnCount(3)
@@ -81,45 +91,72 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 				holeItem.setText(3, "{:3.1f}".format(y))
 				drillItem.addChild(holeItem)
 				
-		self.boardDrillsWidget.setAllHoles(self.fitHoles)
+				if hole in self.selectedHoles:
+					self.treeWidget_holes.setCurrentItem(holeItem)
+					#self.treeWidget_holes.expandItem(drillItem)
+					#self.treeWidget_holes.scrollToItem(holeItem)
+					
+		if not self.selectedHoles:
+			self.treeWidget_holes.setCurrentItem(None)
+					
 		
 				
 	def treeNodeSelected(self):
 		item=self.treeWidget_holes.currentItem()
-		holeIDs=set()
 		
-		if item.childCount() > 0:
-			for i in range(item.childCount()) :
-				holeIDs.add(item.child(i).type()-1000)
-				
-		else:
-			holeIDs.add(item.type()-1000)
+		if item:
+			self.selectedHoles=list()
+			if item.childCount() > 0:
+				for i in range(item.childCount()) :
+					self.selectedHoles.append(self.getHole(item.child(i).type()-1000))
+			else:
+				self.selectedHoles.append(self.getHole(item.type()-1000))
 			
-		self.boardDrillsWidget.setSelectedHoles(holeIDs)
+		self.boardDrillsWidget.setSelectedHoles(self.selectedHoles)
 		
 		
-	def startNextTrafo(self):
+	def holeSelected(self, hole):
+		self.selectedHoles=[hole]
+		self.boardDrillsWidget.setSelectedHoles(self.selectedHoles)
+		self.updateHolesTable()
+		#print(holeID)
+		
+		
+	def addTrafoPoint(self):
 		#print("Move CNC over hole and select it!")
-		if self.currentTrafoHole==0:
-			self.currentTrafoHole=1
-			self.pushButton_startNextTrafo.setText("Next Hole")
-			self.pushButton_finishTrafo.setEnabled(True)
+		if len(self.selectedHoles) == 0:
+			print("Please select a hole first.")
+			return
+		if len(self.selectedHoles) != 1:
+			print("Please select only one point.")
+			return
 			
-		elif self.currentTrafoHole<3:
-			self.currentTrafoHole+=1
-			self.label_trafoPoints.setText(str(self.currentTrafoHole))
+		x, y, ID = self.selectedHoles[0]	# get coordinate of selected hole
 		
-		else:
-			self.pushButton_startNextTrafo.setEnabled(False)
-			
-			
-	def finishTrafo(self):
+		self.trafoPoints.append((x, y))
+		# TODO get machine coordinates
+		self.trafoMachinePoints.append((0, 0))
 		
-		# calculate transformation from collected points
-		self.pushButton_startNextTrafo.setText("Start")
-		self.pushButton_startNextTrafo.setEnabled(True)
-		self.pushButton_finishTrafo.setEnabled(False)
-		self.label_trafoPoints.setText(str(0))
+		self.label_trafoPoints.setText(str(len(self.trafoPoints)))
+		
+		if len(self.trafoPoints) == 4:
+			# 4 points are enough
+			self.pushButton_addPoint.setEnabled(False)
+			
+	def removeAllTrafoPoints(self):
+		
+		self.trafoPoints.clear()
+		self.trafoMachinePoints.clear()
+		self.label_trafoPoints.setText("0")
+		self.pushButton_addHole.setEnabled(True)
+		
+		
+	def getHole(self, holeID):
+		diaList=list(self.fitHoles.keys())
+		for dia in diaList:
+			for hole in (self.fitHoles[dia]):
+				if hole[2] == holeID:
+					return hole
 		
 		
 

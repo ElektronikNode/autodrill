@@ -1,16 +1,17 @@
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QPainter, QWidget
-from PyQt4.QtCore import QRectF
+from PyQt4.QtCore import QRectF,pyqtSignal
 
 class BoardDrillsWidget(QWidget):
 	""" A class for rendering board drills """
+	holeSelected=pyqtSignal(object)
  
 	def __init__(self, parent=None):
 		QWidget.__init__(self)
 		
 		self.setMinimumSize(200, 200)
 		self.allHoles={}
-		self.selectedHoleIDs={}
+		self.selectedHoles=list()
 	
 	
 	def paintEvent(self, event):
@@ -28,68 +29,78 @@ class BoardDrillsWidget(QWidget):
 		self.allHoles = allHoles
 		self.update()
 	
+		
+	# transform real coordinates (mm) to pixel coordinates
+	def real2Pixel(self, pos):
+		x,y=pos
+		xPixel=self.startWidth + (x-self.minX)*self.scale		
+		yPixel=self.startHeight + (y-self.minY)*self.scale
+
+		return xPixel,yPixel
+	
 	
 	def drawBoard(self, qp, allHoles):
 		boardMargin = 1
 		boardPadding = 10
 		
 		# calculate size of board to fit all holes
-		minX, maxX = None, None
-		minY, maxY = None, None
+		self.minX, maxX = None, None
+		self.minY, maxY = None, None
 
 		for drillsize in allHoles:
 			for hole in allHoles[drillsize]:
 				if hole[0] > maxX or maxX is None:
 					maxX = hole[0]
-				if hole[0] < minX or minX is None:
-					minX = hole[0]
+				if hole[0] < self.minX or self.minX is None:
+					self.minX = hole[0]
 				if hole[1] > maxY or maxY is None:
 					maxY = hole[1]
-				if hole[1] < minY or minY is None:
-					minY = hole[1]
+				if hole[1] < self.minY or self.minY is None:
+					self.minY = hole[1]
 
-		boardHeight = maxY-minY
-		boardWidth = maxX-minX
+		boardHeight = maxY-self.minY
+		boardWidth = maxX-self.minX
 		
 		size = self.size()
 
 		availableSpaceHeight = size.height()-2*boardMargin-2*boardPadding
 		availableSpaceWidth = size.width()-2*boardMargin-2*boardPadding
 
-		# calculate scale, to fit board
+		# calculate self.scale, to fit board
 		boardScaleHeight = availableSpaceHeight/float(boardHeight)
 		boardScaleWidth = availableSpaceWidth/float(boardWidth)
 		
-		scale = min([boardScaleHeight, boardScaleWidth])
+		self.scale = min([boardScaleHeight, boardScaleWidth])
 		
 		# calculate start-position of drills on widget
-		startWidth = boardMargin+boardPadding+(size.width()-2*boardMargin-(boardWidth*scale+2*boardPadding))/2
-		startHeight = boardMargin+boardPadding+(size.height()-2*boardMargin-(boardHeight*scale+2*boardPadding))/2
+		self.startWidth = boardMargin+boardPadding+(size.width()-2*boardMargin-(boardWidth*self.scale+2*boardPadding))/2
+		self.startHeight = boardMargin+boardPadding+(size.height()-2*boardMargin-(boardHeight*self.scale+2*boardPadding))/2
 	
 		# draw outline
 		self.drawBoardOutline(qp, 
-							  startWidth-boardPadding,
-							  startHeight-boardPadding,
-							  boardWidth*scale+2*boardPadding,
-							  boardHeight*scale+2*boardPadding)
+							  self.startWidth-boardPadding,
+							  self.startHeight-boardPadding,
+							  boardWidth*self.scale+2*boardPadding,
+							  boardHeight*self.scale+2*boardPadding)
 							  
 	
 		#print(self.selectedHoleIDs)
+		
 		
 		# draw single holes
 		for drillsize in allHoles:
 			for hole in allHoles[drillsize]:
 				#print(hole[2])
-				if hole[2] in self.selectedHoleIDs:
+				if hole in self.selectedHoles:
 					selected=True
 					#print("selected")
 				else:
 					selected=False
 					
-				self.drawSingleHole(qp, startWidth+((hole[0]-minX)*scale), startHeight+((hole[1]-minY)*scale), drillsize, selected)
+				self.drawSingleHole(qp, self.real2Pixel((hole[0], hole[1])), drillsize, selected)
 
 
-	def drawSingleHole(self, qp, x, y, drillsize, selected):
+	def drawSingleHole(self, qp, pos, drillsize, selected):
 		# set color of hole
 		color=QtGui.QColor.fromHsv(int(drillsize*255/3), 255, 196)
 		
@@ -101,6 +112,7 @@ class BoardDrillsWidget(QWidget):
 		qp.setBrush(color)
 
 		# draw hole
+		x,y=pos
 		qp.drawEllipse(QRectF(x-4, y-4, 8, 8))
 
 
@@ -112,7 +124,20 @@ class BoardDrillsWidget(QWidget):
 		# draw outline
 		qp.drawRect(x, y, w, h)
 		
-	def setSelectedHoles(self, holeIDs):
-		self.selectedHoleIDs=holeIDs
+		
+	def setSelectedHoles(self, holes):
+		self.selectedHoles=holes
 		self.update()
+		
+		
+	def mousePressEvent(self, event):
+		xm=event.x()
+		ym=event.y()
+		
+		for drillsize in self.allHoles:
+			for hole in self.allHoles[drillsize]:
+				xh,yh=self.real2Pixel((hole[0], hole[1]))
+				if ((xm-xh)*(xm-xh)+(ym-yh)*(ym-yh) < 10*10):
+					self.holeSelected.emit(hole)
+
 
