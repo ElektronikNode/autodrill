@@ -126,7 +126,7 @@
     <property name="title">
      <string>S&amp;ettings</string>
     </property>
-    <addaction name="action_drillsDialog"/>
+    <addaction name="action_dialogDrills"/>
     <addaction name="action_cameraOffset"/>
    </widget>
    <addaction name="menuFile"/>
@@ -138,7 +138,7 @@
     <string>&amp;Load Drill File</string>
    </property>
   </action>
-  <action name="action_drillsDialog">
+  <action name="action_dialogDrills">
    <property name="text">
     <string>&amp;Drills</string>
    </property>

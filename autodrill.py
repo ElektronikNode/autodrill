@@ -1,11 +1,15 @@
+#!/usr/bin/python
 
-from PyQt4.QtGui import QMainWindow
-from PyQt4.QtGui import QTreeWidget, QTreeWidgetItem, QFileDialog
+
+from PyQt4.QtGui import QMainWindow, QTreeWidget, QTreeWidgetItem, QFileDialog, QDialog, QMessageBox
+from PyQt4.QtCore import QSettings, QCoreApplication, QVariant
 from PyQt4 import Qt
 
 from mainwindow import Ui_MainWindow
+
 from BoardDrillsWidget import BoardDrillsWidget
 from VideoWidget import VideoWidget
+from drills import Drills
 
 from readDrillFile import *
 from bilinear import *
@@ -22,10 +26,22 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 	def __init__(self):
 		QMainWindow.__init__(self)
 		
-		self.rawHoles = {}		# dictionary: holes sorted by diameter that come from drill file
+		QCoreApplication.setOrganizationName("Feichtinger");
+		QCoreApplication.setApplicationName("Autodrill");
+		
+		
+		self.rawHoles = {}		# dictionary: holes sorted by diameter (from drill file)
 		self.fitHoles = {}		# dictionary: holes fitted to available drill diameters
-
-		self.drills={0.6, 0.8, 1.1, 1.3, 1.5, 1.7, 2.0}	# set of available drills
+		
+		# load settings
+		self.settings=QSettings()
+		self.drills=list()
+		for item in self.settings.value("drills").toList():
+			self.drills.append(item.toDouble()[0])
+		self.holeTol=self.settings.value("holeTol", 0.05).toDouble()[0]
+		
+		if not self.drills:
+			QMessageBox.information(self, "No drills defined.", "Please define some drills.");
 		
 		self.selectedHoles=list()		# list of selected holes
 		self.trafoPoints=list()			# points used for transformation (file coordinates)
@@ -42,6 +58,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.boardDrillsWidget.holeSelected.connect(self.holeSelected)
 		
 		self.action_loadDrillFile.triggered.connect(self.action_loadDrillFile_triggered)
+		self.action_dialogDrills.triggered.connect(self.action_dialogDrills_triggered)
 		
 		self.pushButton_addPoint.clicked.connect(self.addTrafoPoint)
 		self.pushButton_removeAll.clicked.connect(self.removeAllTrafoPoints)
@@ -49,6 +66,8 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		
 		#self.cameraWidgetObject = VideoWidget()
 		#self.gridLayout.addWidget(self.cameraWidgetObject, 0, 1, 1, 1)
+		
+		self.dialogDrills=Drills()
 		
 		self.updateHolesTable()
 		self.boardDrillsWidget.setAllHoles(self.fitHoles)
@@ -59,8 +78,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		if filename:
 			#print("file: " + filename)
 			self.rawHoles=readDrillFile(filename)
-			self.fitHoles=fitHolesToDrills(self.rawHoles, self.drills, 0.05)
-			
+			self.fitHoles=fitHolesToDrills(self.rawHoles, self.drills, self.holeTol)
 			self.updateHolesTable()
 			self.boardDrillsWidget.setAllHoles(self.fitHoles)
 		
@@ -145,8 +163,8 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			
 	def removeAllTrafoPoints(self):
 		
-		self.trafoPoints.clear()
-		self.trafoMachinePoints.clear()
+		self.trafoPoints=list()
+		self.trafoMachinePoints.list()
 		self.label_trafoPoints.setText("0")
 		self.pushButton_addHole.setEnabled(True)
 		
@@ -157,12 +175,40 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			for hole in (self.fitHoles[dia]):
 				if hole[2] == holeID:
 					return hole
+					
+	def action_dialogDrills_triggered(self):
 		
+		# init dialog
+		self.dialogDrills.setDrills(self.drills)
+		self.dialogDrills.setHoleTol(self.holeTol)
 		
+		if self.dialogDrills.exec_() == QDialog.Accepted:
+			
+			# read back values
+			self.drills=self.dialogDrills.getDrills()
+			self.drills.sort()
+			self.holeTol=self.dialogDrills.getHoleTol()
+			
+			# save to settings
+			self.settings.setValue("drills", self.drills)
+			self.settings.setValue("holeTol", self.holeTol)
+			
+			# fit holes
+			self.fitHoles=fitHolesToDrills(self.rawHoles, self.drills, self.holeTol)
+			
+			# update widgets
+			self.selectedHoles=list()
+			self.updateHolesTable()
+			self.boardDrillsWidget.setAllHoles(self.fitHoles)
+			
 
 # assign holes to drills from given toolbox
-# pick next larger drill except d_hole < d_drill + tol
+# pick next larger drill except d_hole - tol < d_drill
 def fitHolesToDrills(holes, drills, tol):
+	
+	if not drills:
+		return {}
+	
 	diaList=list(holes.keys())		# list of hole diameters
 	drillDiaList=list(drills)		# list of drill diameters
 	

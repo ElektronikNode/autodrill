@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Fri Dec 11 18:53:26 2015
+# Created: Wed Dec 16 18:08:11 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -90,12 +90,12 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.action_loadDrillFile = QtGui.QAction(MainWindow)
         self.action_loadDrillFile.setObjectName(_fromUtf8("action_loadDrillFile"))
-        self.action_drillsDialog = QtGui.QAction(MainWindow)
-        self.action_drillsDialog.setObjectName(_fromUtf8("action_drillsDialog"))
+        self.action_dialogDrills = QtGui.QAction(MainWindow)
+        self.action_dialogDrills.setObjectName(_fromUtf8("action_dialogDrills"))
         self.action_cameraOffset = QtGui.QAction(MainWindow)
         self.action_cameraOffset.setObjectName(_fromUtf8("action_cameraOffset"))
         self.menuFile.addAction(self.action_loadDrillFile)
-        self.menuSettings.addAction(self.action_drillsDialog)
+        self.menuSettings.addAction(self.action_dialogDrills)
         self.menuSettings.addAction(self.action_cameraOffset)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuSettings.menuAction())
@@ -114,6 +114,6 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(_translate("MainWindow", "&File", None))
         self.menuSettings.setTitle(_translate("MainWindow", "S&ettings", None))
         self.action_loadDrillFile.setText(_translate("MainWindow", "&Load Drill File", None))
-        self.action_drillsDialog.setText(_translate("MainWindow", "&Drills", None))
+        self.action_dialogDrills.setText(_translate("MainWindow", "&Drills", None))
         self.action_cameraOffset.setText(_translate("MainWindow", "&Camera Offset", None))
 
