@@ -36,15 +36,17 @@ class VideoWidget(QWidget):
         QWidget.__init__(self)
 
         self.zoom = 1
+        self.is_connected = False
 
         self._capture = cv.CaptureFromCAM(0)
 
         # Take one frame to query height
         frame = cv.QueryFrame(self._capture)
-        if not frame:
+        if frame is None:
             QMessageBox.information(self, "Could not open camera", "Please configure/enable camera");
             return
 
+        self.is_connected = True
         self.setMinimumSize(300,300)
         self._frame = None
         self._image = self._build_image(frame)
@@ -101,11 +103,29 @@ class VideoWidget(QWidget):
 
 
     def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.drawImage(QPoint(0, 0), self._image)
+        qp = QPainter(self)
+
+        if not self.is_connected:
+            # fill background grey
+            qp.setPen(QtCore.Qt.lightGray)
+            qp.setBrush(QtCore.Qt.lightGray)
+            qp.drawRect(0, 0, self.width(), self.height())
+            # draw text
+            qp.setPen(QtCore.Qt.white)
+            qp.drawText(QRectF(0, 0, self.width(), self.height()), QtCore.Qt.AlignCenter, "Device not found!")
+            return
+
+        qp.drawImage(QPoint(0, 0), self._image)
 
 
     def queryFrame(self):
         frame = cv.QueryFrame(self._capture)
+        if frame is None:
+            if self.is_connected:
+                self.is_connected = False
+                self.update()
+            self.is_connected = False
+            return
+        self.is_connected = True
         self._image = self._build_image(frame)
         self.update()

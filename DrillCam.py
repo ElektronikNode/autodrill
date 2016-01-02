@@ -14,12 +14,15 @@ class DrillCam(VideoWidget):
 
     def paintEvent(self, event):
         VideoWidget.paintEvent(self, event)
+
+        if not self.is_connected:
+            return
+
         qp = QPainter(self)
         qp.setRenderHints(QPainter.Antialiasing)
         #painter.begin(self)
         qp.setPen(QtGui.QColor(255, 255, 0))
         self.drawCenterGrid(qp)
-        qp.end()
 
 
     def drawCenterGrid(self, qp):
