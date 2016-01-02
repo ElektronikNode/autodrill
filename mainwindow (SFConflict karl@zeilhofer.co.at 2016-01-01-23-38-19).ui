@@ -67,7 +67,7 @@
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Please select 3 or 4 points.</string>
+          <string>Please select 2..4 points.</string>
          </property>
         </widget>
        </item>
@@ -121,7 +121,6 @@
      <string>&amp;File</string>
     </property>
     <addaction name="action_loadDrillFile"/>
-    <addaction name="action_writeGCode"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
@@ -147,11 +146,6 @@
   <action name="action_cameraOffset">
    <property name="text">
     <string>&amp;Camera Offset</string>
-   </property>
-  </action>
-  <action name="action_writeGCode">
-   <property name="text">
-    <string>&amp;Write G-Code Files</string>
    </property>
   </action>
  </widget>

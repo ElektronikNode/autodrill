@@ -1,0 +1,1 @@
+* display warning when loading drill file and no drills are defined

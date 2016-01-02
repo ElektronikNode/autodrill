@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 
-from PyQt4.QtGui import QMainWindow, QTreeWidget, QTreeWidgetItem, QFileDialog, QDialog, QMessageBox
-from PyQt4.QtCore import QSettings, QCoreApplication, QVariant
+from PyQt4.QtGui import QMainWindow
+from PyQt4.QtGui import QTreeWidget, QTreeWidgetItem, QFileDialog, QDialog
 from PyQt4 import Qt
 
 from mainwindow import Ui_MainWindow
@@ -12,12 +12,11 @@ from VideoWidget import VideoWidget
 from drills import Drills
 
 from readDrillFile import *
-from bilinearTrafo import *
+from bilinear import *
 from findPath import *
 from writeGCode import *
 
 import sys
-import linuxcnc
 
 
 
@@ -27,22 +26,11 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 	def __init__(self):
 		QMainWindow.__init__(self)
 		
-		QCoreApplication.setOrganizationName("Feichtinger");
-		QCoreApplication.setApplicationName("Autodrill");
-		
-		
-		self.rawHoles = {}		# dictionary: holes sorted by diameter (from drill file)
+		self.rawHoles = {}		# dictionary: holes sorted by diameter that come from drill file
 		self.fitHoles = {}		# dictionary: holes fitted to available drill diameters
-		
-		# load settings
-		self.settings=QSettings()
-		self.drills=list()
-		for item in self.settings.value("drills").toList():
-			self.drills.append(item.toDouble()[0])
-		self.holeTol=self.settings.value("holeTol", 0.05).toDouble()[0]
-		
-		if not self.drills:
-			QMessageBox.information(self, "No drills defined.", "Please define some drills.");
+
+		self.drills=[0.6, 0.8, 1.1, 1.3, 1.5, 1.7, 2.0]	# list of available drills
+		self.holeTol=0.05								# lower tolerance for hole diameters
 		
 		self.selectedHoles=list()		# list of selected holes
 		self.trafoPoints=list()			# points used for transformation (file coordinates)
@@ -60,7 +48,6 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		
 		self.action_loadDrillFile.triggered.connect(self.action_loadDrillFile_triggered)
 		self.action_dialogDrills.triggered.connect(self.action_dialogDrills_triggered)
-		self.action_writeGCode.triggered.connect(self.action_writeGCode_triggered)
 		
 		self.pushButton_addPoint.clicked.connect(self.addTrafoPoint)
 		self.pushButton_removeAll.clicked.connect(self.removeAllTrafoPoints)
@@ -73,13 +60,6 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		
 		self.updateHolesTable()
 		self.boardDrillsWidget.setAllHoles(self.fitHoles)
-		
-		
-		try:
-			s = linuxcnc.stat() # create a connection to the status channel
-			s.poll() 			# get current values
-		except linuxcnc.error:
-			QMessageBox.information(self, "LinuxCNC", "Please start LinuxCNC now.")
 		
 		
 	def action_loadDrillFile_triggered(self):
@@ -157,21 +137,12 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		if len(self.selectedHoles) != 1:
 			print("Please select only one point.")
 			return
-
-
-		# get machine coordinates		
-		try:
-			s = linuxcnc.stat() # create a connection to the status channel
-			s.poll() 			# get current values
-			self.trafoMachinePoints.append((s.position[0], s.position[1]))
-			#print(self.trafoMachinePoints[-1])
-		except linuxcnc.error:
-			QMessageBox.warning(self, "LinuxCNC", "Could not connect to LinuxCNC.")
-
-		# get coordinate of selected hole
-		x, y, ID = self.selectedHoles[0]
-		self.trafoPoints.append((x, y))
+			
+		x, y, ID = self.selectedHoles[0]	# get coordinate of selected hole
 		
+		self.trafoPoints.append((x, y))
+		# TODO get machine coordinates
+		self.trafoMachinePoints.append((0, 0))
 		
 		self.label_trafoPoints.setText(str(len(self.trafoPoints)))
 		
@@ -181,8 +152,8 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			
 	def removeAllTrafoPoints(self):
 		
-		self.trafoPoints=list()
-		self.trafoMachinePoints=list()
+		self.trafoPoints.clear()
+		self.trafoMachinePoints.clear()
 		self.label_trafoPoints.setText("0")
 		self.pushButton_addHole.setEnabled(True)
 		
@@ -196,51 +167,25 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 					
 	def action_dialogDrills_triggered(self):
 		
-		# init dialog
 		self.dialogDrills.setDrills(self.drills)
 		self.dialogDrills.setHoleTol(self.holeTol)
 		
 		if self.dialogDrills.exec_() == QDialog.Accepted:
 			
-			# read back values
 			self.drills=self.dialogDrills.getDrills()
 			self.drills.sort()
+			
 			self.holeTol=self.dialogDrills.getHoleTol()
 			
-			# save to settings
-			self.settings.setValue("drills", self.drills)
-			self.settings.setValue("holeTol", self.holeTol)
-			
-			# fit holes
 			self.fitHoles=fitHolesToDrills(self.rawHoles, self.drills, self.holeTol)
-			
-			# update widgets
 			self.selectedHoles=list()
 			self.updateHolesTable()
 			self.boardDrillsWidget.setAllHoles(self.fitHoles)
-			
-			
-	def action_writeGCode_triggered(self):
-		
-		if not len(self.trafoPoints) in {3, 4}:
-			QMessageBox.warning(self, "not enough points", "Please select at least 3 transformation points.")
-			return
-			
-		T=bilinearTrafo(self.trafoPoints, self.trafoMachinePoints)
-		for dia in self.fitHoles:
-			path=findPath(T.transform(self.fitHoles[dia]))
-			#print(type(path))
-			#print(path)
-			writeGCode(dia, path)
 			
 
 # assign holes to drills from given toolbox
 # pick next larger drill except d_hole - tol < d_drill
 def fitHolesToDrills(holes, drills, tol):
-	
-	if not drills:
-		return {}
-	
 	diaList=list(holes.keys())		# list of hole diameters
 	drillDiaList=list(drills)		# list of drill diameters
 	
@@ -280,8 +225,8 @@ if __name__ == '__main__':
 	
 	#for dia in fitHoles:
 		
-		#path=findPath(fitHoles[dia])
-		#writeGCode(dia, path)
+	#	path=findPath(fitHoles[dia])
+	#	writeGCode(dia, path)
 		#print()
 		#print("dia "+str(dia)+":")
 		#print(fitHoles[dia])
@@ -294,7 +239,7 @@ if __name__ == '__main__':
 	#path=findPath(points)
 
 	
-	#T=bilinearTrafo(points, points_t)
+	#T=bilinear(points, points_t)
 	
 	#p = (0.5, 0.5)
 

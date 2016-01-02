@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Wed Dec 16 18:08:11 2015
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -93,10 +94,7 @@ class Ui_MainWindow(object):
         self.action_dialogDrills.setObjectName(_fromUtf8("action_dialogDrills"))
         self.action_cameraOffset = QtGui.QAction(MainWindow)
         self.action_cameraOffset.setObjectName(_fromUtf8("action_cameraOffset"))
-        self.action_writeGCode = QtGui.QAction(MainWindow)
-        self.action_writeGCode.setObjectName(_fromUtf8("action_writeGCode"))
         self.menuFile.addAction(self.action_loadDrillFile)
-        self.menuFile.addAction(self.action_writeGCode)
         self.menuSettings.addAction(self.action_dialogDrills)
         self.menuSettings.addAction(self.action_cameraOffset)
         self.menubar.addAction(self.menuFile.menuAction())
@@ -110,7 +108,7 @@ class Ui_MainWindow(object):
         self.groupBox.setTitle(_translate("MainWindow", "Transformation", None))
         self.pushButton_addPoint.setText(_translate("MainWindow", "Add Selected Point", None))
         self.pushButton_removeAll.setText(_translate("MainWindow", "Remove All", None))
-        self.label_2.setText(_translate("MainWindow", "Please select 3 or 4 points.", None))
+        self.label_2.setText(_translate("MainWindow", "Please select 2..4 points.", None))
         self.label.setText(_translate("MainWindow", "Points used:", None))
         self.label_trafoPoints.setText(_translate("MainWindow", "0", None))
         self.menuFile.setTitle(_translate("MainWindow", "&File", None))
@@ -118,5 +116,4 @@ class Ui_MainWindow(object):
         self.action_loadDrillFile.setText(_translate("MainWindow", "&Load Drill File", None))
         self.action_dialogDrills.setText(_translate("MainWindow", "&Drills", None))
         self.action_cameraOffset.setText(_translate("MainWindow", "&Camera Offset", None))
-        self.action_writeGCode.setText(_translate("MainWindow", "&Write G-Code Files", None))
 
