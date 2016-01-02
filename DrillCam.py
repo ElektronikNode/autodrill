@@ -27,8 +27,8 @@ class DrillCam(VideoWidget):
         mid_x = size.width()/2
         mid_y = size.height()/2
 
-        max_radius = min([size.width()/2, size.height()/2])
-        spacing = 40
+        max_radius = min([size.width()/2, size.height()/2])-5
+        spacing = 30
 
         for radius in range(20, max_radius, spacing):
             qp.drawEllipse(mid_x-radius, mid_y-radius, 2*radius, 2*radius)

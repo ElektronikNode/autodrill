@@ -34,6 +34,9 @@ class VideoWidget(QWidget):
 
     def __init__(self, parent=None):
         QWidget.__init__(self)
+
+        self.zoom = 1
+
         self._capture = cv.CaptureFromCAM(0)
 
         # Take one frame to query height
@@ -42,8 +45,7 @@ class VideoWidget(QWidget):
             QMessageBox.information(self, "Could not open camera", "Please configure/enable camera");
             return
 
-        self.setMinimumSize(frame.width, frame.height)
-        self.setMaximumSize(self.minimumSize())
+        self.setMinimumSize(300,300)
         self._frame = None
         self._image = self._build_image(frame)
 
@@ -54,13 +56,48 @@ class VideoWidget(QWidget):
 
 
     def _build_image(self, frame):
+        # TODO: don't user member variable self._frame
         if not self._frame:
             self._frame = cv.CreateImage((frame.width, frame.height), cv.IPL_DEPTH_8U, frame.nChannels)
+
         if frame.origin == cv.IPL_ORIGIN_TL:
             cv.Copy(frame, self._frame)
         else:
             cv.Flip(frame, self._frame, 0)
-        return IplQImage(self._frame)
+
+        dst_frame = cv.CreateImage(cv.GetSize(self._frame), self._frame.depth, self._frame.nChannels)
+
+        width_height_ratio = float(self.width())/float(self.height()) #()/
+
+        center_width = self._frame.width/2.
+        center_height = self._frame.height/2.
+        delta_width = float(self._frame.width)/self.zoom
+
+        # calculate region of interrest using widget size
+        if width_height_ratio >= float(self._frame.width)/float(self._frame.height):
+            delta_height = float(self._frame.height)/self.zoom
+            delta_width = delta_height*width_height_ratio
+        else:
+            delta_width = float(self._frame.width)/self.zoom
+            delta_height = delta_width/width_height_ratio
+
+        # fix delta, if delta is greater than image size
+        if delta_height > self._frame.height:
+            delta_width *= self._frame.height/delta_height
+            delta_height = self._frame.height
+        if delta_width > self._frame.width:
+            delta_height *= self._frame.width/delta_width
+            delta_width = self._frame.width
+
+        # TODO: fix zoom inaccuracy (+-1px)
+        cv.SetImageROI(self._frame, (int(center_width-delta_width/2.), int(center_height-delta_height/2.), int(delta_width), int(delta_height)))
+
+        dst_frame = cv.CreateImage((self.width(), self.height()), cv.IPL_DEPTH_8U, frame.nChannels)
+        cv.Resize(self._frame, dst_frame)
+
+        cv.ResetImageROI(self._frame)
+
+        return IplQImage(dst_frame)
 
 
     def paintEvent(self, event):
