@@ -18,11 +18,17 @@ class BoardDrillsWidget(QWidget):
 		#print("paint")
 		qp = QPainter(self)
 		qp.setRenderHints(QPainter.Antialiasing)
+
 		if self.allHoles:
 			self.drawBoard(qp, self.allHoles)
 		else:
-			self.drawBoardOutline(qp, 0, 0, self.width(), self.height())
-		qp.end()
+			# fill background grey
+			qp.setPen(QtCore.Qt.gray)
+			qp.setBrush(QtCore.Qt.gray)
+			qp.drawRect(0, 0, self.width(), self.height())
+			# draw text
+			qp.setPen(QtCore.Qt.white)
+			qp.drawText(QRectF(0, 0, self.width(), self.height()), QtCore.Qt.AlignCenter, "please load Drill File")
 
 
 	def setAllHoles(self, allHoles):

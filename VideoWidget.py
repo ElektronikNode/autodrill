@@ -107,8 +107,8 @@ class VideoWidget(QWidget):
 
         if not self.is_connected:
             # fill background grey
-            qp.setPen(QtCore.Qt.lightGray)
-            qp.setBrush(QtCore.Qt.lightGray)
+            qp.setPen(QtCore.Qt.gray)
+            qp.setBrush(QtCore.Qt.gray)
             qp.drawRect(0, 0, self.width(), self.height())
             # draw text
             qp.setPen(QtCore.Qt.white)
