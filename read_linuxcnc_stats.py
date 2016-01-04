@@ -6,5 +6,7 @@ try:
 except linuxcnc.error, detail:
 	print "error", detail
 	sys.exit(1)
-	
-print s.position
+
+
+print(s.position)
+print(s.actual_position)

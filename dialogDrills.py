@@ -2,11 +2,11 @@
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QDialog, QMessageBox, QTableWidgetItem
 
-from dialogdrills import Ui_DialogDrills
+from ui_dialogDrills import Ui_DialogDrills
 
-class Drills(QDialog, Ui_DialogDrills):
-	def __init__(self):
-		QDialog.__init__(self)
+class DialogDrills(QDialog, Ui_DialogDrills):
+	def __init__(self, parent=None):
+		QDialog.__init__(self, parent)
 		
 		# Set up the user interface from Designer.
 		self.setupUi(self)
@@ -66,7 +66,7 @@ class Drills(QDialog, Ui_DialogDrills):
 	def setDrills(self, drills):
 		self.drills=drills
 		
-		self.tableWidget_drills.clear()
+		self.tableWidget_drills.clearContents()
 		self.tableWidget_drills.setRowCount(len(drills)+1)
 		
 		for i in range(len(drills)):

@@ -5,27 +5,21 @@ from PyQt4.QtGui import QMainWindow, QTreeWidget, QTreeWidgetItem, QFileDialog, 
 from PyQt4.QtCore import QSettings, QCoreApplication, QVariant
 from PyQt4 import Qt
 
-from mainwindow import Ui_MainWindow
+from ui_mainwindow import Ui_MainWindow
 
 from BoardDrillsWidget import BoardDrillsWidget
 from VideoWidget import VideoWidget
 from DrillCam import DrillCam
-from drills import Drills
+from dialogDrills import DialogDrills
+from dialogCamera import DialogCamera
 
 from readDrillFile import *
 from bilinearTrafo import *
 from findPath import *
 from writeGCode import *
+from machineInterface import *
 
 import sys
-
-try:
-	import linuxcnc
-	linuxcnc_available=True
-except ImportError:
-	linuxcnc_available=False
-
-
 
 class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 
@@ -36,72 +30,87 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		QCoreApplication.setApplicationName("Autodrill");
 
 
+		# set up the user interface from Designer.
+		self.setupUi(self)
+
+		self.boardDrillsWidget = BoardDrillsWidget()
+		self.gridLayout.addWidget(self.boardDrillsWidget, 0, 0, 2, 1)
+		
+		self.cameraWidget = DrillCam()
+		self.gridLayout.addWidget(self.cameraWidget, 0, 1, 1, 1)
+
+		self.dialogDrills=DialogDrills(self)
+		self.dialogCamera=DialogCamera(self)
+		
+		
+		# init local variables
 		self.rawHoles = {}		# dictionary: holes sorted by diameter (from drill file)
 		self.fitHoles = {}		# dictionary: holes fitted to available drill diameters
 
+		self.selectedHoles=list()		# list of selected holes
+		self.trafoPoints=list()			# points used for transformation (file coordinates)
+		self.trafoMachinePoints=list() 	# corresponding machine coordinates
+		
+		
 		# load settings
 		self.settings=QSettings()
 		self.drills=list()
 		for item in self.settings.value("drills").toList():
 			self.drills.append(item.toDouble()[0])
 		self.holeTol=self.settings.value("holeTol", 0.05).toDouble()[0]
+		self.cameraZoom=self.settings.value("cameraZoom", 1.0).toDouble()[0]
+		self.cameraOffset=(self.settings.value("cameraOffsetX", 0.0).toDouble()[0], self.settings.value("cameraOffsetY", 0.0).toDouble()[0])
+		
 
-		if not self.drills:
-			QMessageBox.information(self, "No drills defined.", "Please define some drills.");
-
-		self.selectedHoles=list()		# list of selected holes
-		self.trafoPoints=list()			# points used for transformation (file coordinates)
-		self.trafoMachinePoints=list() 	# corresponding machine coordinates
-
-
-		# Set up the user interface from Designer.
-		self.setupUi(self)
-
-		self.boardDrillsWidget = BoardDrillsWidget()
-		self.gridLayout.addWidget(self.boardDrillsWidget, 0, 0, 2, 1)
-
+		# connect signals and slots
+		self.action_loadDrillFile.triggered.connect(self.action_loadDrillFile_triggered)
+		self.action_dialogDrills.triggered.connect(self.action_dialogDrills_triggered)
+		self.action_dialogCamera.triggered.connect(self.action_dialogCamera_triggered)
+		self.action_writeGCode.triggered.connect(self.action_writeGCode_triggered)
+		
 		self.treeWidget_holes.currentItemChanged.connect(self.treeNodeSelected)
 		self.boardDrillsWidget.holeSelected.connect(self.holeSelected)
 
-		self.action_loadDrillFile.triggered.connect(self.action_loadDrillFile_triggered)
-		self.action_dialogDrills.triggered.connect(self.action_dialogDrills_triggered)
-		self.action_writeGCode.triggered.connect(self.action_writeGCode_triggered)
-
 		self.pushButton_addPoint.clicked.connect(self.addTrafoPoint)
 		self.pushButton_removeAll.clicked.connect(self.removeAllTrafoPoints)
-
-
-		self.cameraWidgetObject = DrillCam()
-		self.gridLayout.addWidget(self.cameraWidgetObject, 0, 1, 1, 1)
-
-		self.dialogDrills=Drills()
-
+		
+		self.verticalSlider_cameraZoom.valueChanged.connect(self.zoomChanged)
+		
+		
+		# init widgets
 		self.updateHolesTable()
-		self.boardDrillsWidget.setAllHoles(self.fitHoles)
+		self.cameraWidget.setZoom(self.cameraZoom)
+		self.verticalSlider_cameraZoom.setValue(self.cameraZoom*10)
 
-		if not linuxcnc_available:
+
+		# check for LinuxCNC
+		if not LinuxCNCInstalled():
 			QMessageBox.information(self, "LinuxCNC", "Please install LinuxCNC")
 			return
-
-		try:
-			s = linuxcnc.stat() # create a connection to the status channel
-			s.poll() 			# get current values
-		except linuxcnc.error:
+			
+		if not LinuxCNCRunning():
 			QMessageBox.information(self, "LinuxCNC", "Please start LinuxCNC now.")
 
 
 	def action_loadDrillFile_triggered(self):
-		filename = QFileDialog.getOpenFileName(self, "select drill file", "", "Drill Files (*.drl)")
+		if not self.drills:
+			QMessageBox.information(self, "No drills defined", "Please define some drills first. (Settings -> Drills)")
+			return
+		
+		self.cameraWidget.pause()
+		filename = QFileDialog.getOpenFileName(self, "select drill file", "", "Drill Files (*.drl *.drd)")
 		if filename:
 			#print("file: " + filename)
 			self.rawHoles=readDrillFile(filename)
 			self.fitHoles=fitHolesToDrills(self.rawHoles, self.drills, self.holeTol)
 			self.updateHolesTable()
 			self.boardDrillsWidget.setAllHoles(self.fitHoles)
+			self.removeAllTrafoPoints()
+			
+		self.cameraWidget.resume()
 
 
 	def updateHolesTable(self):
-
 		self.treeWidget_holes.clear()
 		self.treeWidget_holes.setColumnCount(3)
 		self.treeWidget_holes.setColumnWidth(0, 50)
@@ -135,7 +144,6 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			self.treeWidget_holes.setCurrentItem(None)
 
 
-
 	def treeNodeSelected(self):
 		item=self.treeWidget_holes.currentItem()
 
@@ -160,20 +168,16 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 	def addTrafoPoint(self):
 		#print("Move CNC over hole and select it!")
 		if len(self.selectedHoles) == 0:
-			print("Please select a hole first.")
+			QMessageBox.information("Transformation", "Please select a hole first.")
 			return
 		if len(self.selectedHoles) != 1:
-			print("Please select only one point.")
+			QMessageBox.warning("Transformation", "Please select only one point.")
 			return
 
-		# get machine coordinates
-		try:
-			s = linuxcnc.stat() # create a connection to the status channel
-			s.poll() 			# get current values
-			self.trafoMachinePoints.append((s.position[0], s.position[1]))
-			#print(self.trafoMachinePoints[-1])
-		except linuxcnc.error:
-			QMessageBox.warning(self, "LinuxCNC", "Could not connect to LinuxCNC.")
+		# get machine coordinates and add camera offset
+		xm, ym = getMachinePosition()
+		xo, yo = self.cameraOffset
+		self.trafoMachinePoints.append((xm+xo, ym+yo))
 
 		# get coordinate of selected hole
 		x, y, ID = self.selectedHoles[0]
@@ -185,12 +189,12 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			# 4 points are enough
 			self.pushButton_addPoint.setEnabled(False)
 
-	def removeAllTrafoPoints(self):
 
+	def removeAllTrafoPoints(self):
 		self.trafoPoints=list()
 		self.trafoMachinePoints=list()
 		self.label_trafoPoints.setText("0")
-		self.pushButton_addHole.setEnabled(True)
+		self.pushButton_addPoint.setEnabled(True)
 
 
 	def getHole(self, holeID):
@@ -201,11 +205,11 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 					return hole
 
 	def action_dialogDrills_triggered(self):
-
 		# init dialog
 		self.dialogDrills.setDrills(self.drills)
 		self.dialogDrills.setHoleTol(self.holeTol)
 
+		self.cameraWidget.pause()
 		if self.dialogDrills.exec_() == QDialog.Accepted:
 
 			# read back values
@@ -224,6 +228,21 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			self.selectedHoles=list()
 			self.updateHolesTable()
 			self.boardDrillsWidget.setAllHoles(self.fitHoles)
+		
+		self.cameraWidget.resume()
+			
+	def action_dialogCamera_triggered(self):
+		self.dialogCamera.setOffset(self.cameraOffset)
+		
+		self.cameraWidget.pause()
+		if self.dialogCamera.exec_() == QDialog.Accepted:
+			
+			self.cameraOffset=self.dialogCamera.getOffset()
+			x, y=self.cameraOffset
+			self.settings.setValue("cameraOffsetX", x)
+			self.settings.setValue("cameraOffsetY", y)
+			
+		self.cameraWidget.resume()
 
 	def action_writeGCode_triggered(self):
 
@@ -237,6 +256,14 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			#print(type(path))
 			#print(path)
 			writeGCode(dia, path)
+			
+			
+	def zoomChanged(self):
+		self.cameraZoom=float(self.verticalSlider_cameraZoom.value())/10
+		self.cameraWidget.setZoom(self.cameraZoom)
+		self.settings.setValue("cameraZoom", self.cameraZoom)
+		
+
 
 # assign holes to drills from given toolbox
 # pick next larger drill except d_hole - tol < d_drill
@@ -276,31 +303,9 @@ def fitHolesToDrills(holes, drills, tol):
 		fitHoles[drillDia] |= (holes[dia])
 
 	return fitHoles
-
-
+	
+	
 if __name__ == '__main__':
-
-
-
-	#for dia in fitHoles:
-
-		#path=findPath(fitHoles[dia])
-		#writeGCode(dia, path)
-		#print()
-		#print("dia "+str(dia)+":")
-		#print(fitHoles[dia])
-		#print()
-
-
-	#points = {(0, 0), (1, 0), (0, 1), (1, 1)}
-	#points_t = {(0, 0), (1, 0.1), (-0.1, 1)}
-
-	#path=findPath(points)
-
-	#T=bilinearTrafo(points, points_t)
-	#p = (0.5, 0.5)
-
-	#print(T.transform(p))
 
 	app = Qt.QApplication(sys.argv)
 	ui = AutodrillMainWindow()

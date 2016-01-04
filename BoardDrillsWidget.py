@@ -7,7 +7,7 @@ class BoardDrillsWidget(QWidget):
 	holeSelected=pyqtSignal(object)
 
 	def __init__(self, parent=None):
-		QWidget.__init__(self)
+		QWidget.__init__(self, parent)
 
 		self.setMinimumSize(200, 200)
 		self.allHoles={}
@@ -28,7 +28,7 @@ class BoardDrillsWidget(QWidget):
 			qp.drawRect(0, 0, self.width(), self.height())
 			# draw text
 			qp.setPen(QtCore.Qt.white)
-			qp.drawText(QRectF(0, 0, self.width(), self.height()), QtCore.Qt.AlignCenter, "please load Drill File")
+			qp.drawText(QRectF(0, 0, self.width(), self.height()), QtCore.Qt.AlignCenter, "Please load drill file")
 
 
 	def setAllHoles(self, allHoles):

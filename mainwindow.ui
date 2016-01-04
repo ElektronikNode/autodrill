@@ -14,9 +14,9 @@
    <string>auto drill</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
+   <layout class="QGridLayout" name="gridLayout" columnstretch="2,2,1">
     <item row="0" column="0" rowspan="2">
-     <widget class="QWidget" name="paintWidget" native="true">
+     <widget class="QWidget" name="boardDrillsWidget" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
@@ -25,7 +25,7 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="1" colspan="2">
+    <item row="0" column="1">
      <widget class="QWidget" name="cameraWidget" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -35,17 +35,51 @@
       </property>
      </widget>
     </item>
+    <item row="0" column="2">
+     <layout class="QGridLayout" name="gridLayout_zoom">
+      <item row="1" column="0">
+       <widget class="QSlider" name="verticalSlider_cameraZoom">
+        <property name="minimum">
+         <number>10</number>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="singleStep">
+         <number>1</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Zoom</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>58</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
     <item row="1" column="1">
-     <widget class="QTreeWidget" name="treeWidget_holes">
-      <column>
-       <property name="text">
-        <string notr="true">1</string>
-       </property>
-      </column>
-     </widget>
+     <widget class="QTreeWidget" name="treeWidget_holes"/>
     </item>
     <item row="1" column="2">
-     <widget class="QGroupBox" name="groupBox">
+     <widget class="QGroupBox" name="groupBox_trafo">
       <property name="title">
        <string>Transformation</string>
       </property>
@@ -128,7 +162,7 @@
      <string>S&amp;ettings</string>
     </property>
     <addaction name="action_dialogDrills"/>
-    <addaction name="action_cameraOffset"/>
+    <addaction name="action_dialogCamera"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSettings"/>
@@ -144,9 +178,9 @@
     <string>&amp;Drills</string>
    </property>
   </action>
-  <action name="action_cameraOffset">
+  <action name="action_dialogCamera">
    <property name="text">
-    <string>&amp;Camera Offset</string>
+    <string>&amp;Camera Settings</string>
    </property>
   </action>
   <action name="action_writeGCode">

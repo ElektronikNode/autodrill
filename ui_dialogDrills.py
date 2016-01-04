@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'dialogdrills.ui'
+# Form implementation generated from reading ui file 'dialogDrills.ui'
 #
 # Created by: PyQt4 UI code generator 4.11.4
 #
@@ -42,6 +42,7 @@ class Ui_DialogDrills(object):
         self.tableWidget_drills.setVerticalHeaderItem(0, item)
         item = QtGui.QTableWidgetItem()
         self.tableWidget_drills.setHorizontalHeaderItem(0, item)
+        self.tableWidget_drills.horizontalHeader().setStretchLastSection(True)
         self.tableWidget_drills.verticalHeader().setVisible(True)
         self.gridLayout.addWidget(self.tableWidget_drills, 0, 0, 1, 1)
         self.horizontalLayout.addWidget(self.groupBox)
@@ -63,6 +64,9 @@ class Ui_DialogDrills(object):
         self.lineEdit_holeTol = QtGui.QLineEdit(self.groupBox_2)
         self.lineEdit_holeTol.setObjectName(_fromUtf8("lineEdit_holeTol"))
         self.horizontalLayout_3.addWidget(self.lineEdit_holeTol)
+        self.label_2 = QtGui.QLabel(self.groupBox_2)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.horizontalLayout_3.addWidget(self.label_2)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
         self.verticalLayout_2.addWidget(self.groupBox_2)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
@@ -88,9 +92,10 @@ class Ui_DialogDrills(object):
         item = self.tableWidget_drills.verticalHeaderItem(0)
         item.setText(_translate("DialogDrills", "1", None))
         item = self.tableWidget_drills.horizontalHeaderItem(0)
-        item.setText(_translate("DialogDrills", "diameter", None))
+        item.setText(_translate("DialogDrills", "Diameter (mm)", None))
         self.groupBox_2.setTitle(_translate("DialogDrills", "Lower Hole Tolerance", None))
         self.label.setText(_translate("DialogDrills", "Normally Autodrill will pick the next larger drill bit for a given hole diameter. But for holes that are slightly over the size of the drill bit, Autodrill can pick the undersized drill bit if the difference is smaller than the lower hole tolerance.", None))
+        self.label_2.setText(_translate("DialogDrills", "mm", None))
         self.pushButton_cancel.setText(_translate("DialogDrills", "Cancel", None))
         self.pushButton_OK.setText(_translate("DialogDrills", "OK", None))
 
