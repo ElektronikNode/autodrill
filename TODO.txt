@@ -1,3 +1,2 @@
 * camera configuaration (Camera Offset, Camera Selection, ...) 
 * drilling parameters (feedrate, z-spacing, depth, drill change position)
-* support drill files with imperial units

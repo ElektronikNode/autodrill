@@ -40,7 +40,7 @@ class BoardDrillsWidget(QWidget):
 	def real2Pixel(self, pos):
 		x,y=pos
 		xPixel=self.startWidth + (x-self.minX)*self.scale
-		yPixel=self.startHeight + (y-self.minY)*self.scale
+		yPixel=self.height() - (self.startHeight + (y-self.minY)*self.scale)
 
 		return xPixel,yPixel
 
