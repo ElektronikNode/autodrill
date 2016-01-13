@@ -36,15 +36,15 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 
 		self.boardDrillsWidget = BoardDrillsWidget()
 		self.gridLayout.addWidget(self.boardDrillsWidget, 0, 0, 2, 1)
-		
+
 		self.cameraWidget = DrillCam()
 		self.gridLayout.addWidget(self.cameraWidget, 0, 1, 1, 1)
 
 		self.dialogDrills=DialogDrills(self)
 		self.dialogDrillParameter=DialogDrillParameter(self)
 		self.dialogCamera=DialogCamera(self)
-		
-		
+
+
 		# init local variables
 		self.rawHoles = {}		# dictionary: holes sorted by diameter (from drill file)
 		self.fitHoles = {}		# dictionary: holes fitted to available drill diameters
@@ -52,12 +52,12 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.selectedHoles=list()		# list of selected holes
 		self.trafoPoints=list()			# points used for transformation (file coordinates)
 		self.trafoMachinePoints=list() 	# corresponding machine coordinates
-		
-		
+
+
 		# load settings (and set default values)
 		self.settings=QSettings()
 		self.drills=list()
-		
+
 		for item in self.settings.value("drills", "").toList():
 			self.drills.append(item.toDouble()[0])
 		self.diaTol=self.settings.value("diaTol", 0.05).toDouble()[0]
@@ -68,8 +68,8 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.drillSpacing=self.settings.value("drillSpacing", 5.0).toDouble()[0]
 		self.toolChangePos=(self.settings.value("toolChangePosX", 0.0).toDouble()[0], self.settings.value("toolChangePosY", 0.0).toDouble()[0], self.settings.value("toolChangePosZ", 20.0).toDouble()[0])
 		self.currentPath=self.settings.value("currentPath", "").toString()
-		
-		
+
+
 
 		# connect signals and slots
 		self.action_loadDrillFile.triggered.connect(self.action_loadDrillFile_triggered)
@@ -77,16 +77,16 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.action_dialogDrillParameter.triggered.connect(self.action_dialogDrillParameter_triggered)
 		self.action_dialogCamera.triggered.connect(self.action_dialogCamera_triggered)
 		self.action_writeGCode.triggered.connect(self.action_writeGCode_triggered)
-		
+
 		self.treeWidget_holes.currentItemChanged.connect(self.treeNodeSelected)
 		self.boardDrillsWidget.holeSelected.connect(self.holeSelected)
 
 		self.pushButton_addPoint.clicked.connect(self.addTrafoPoint)
 		self.pushButton_removeAll.clicked.connect(self.removeAllTrafoPoints)
-		
+
 		self.verticalSlider_cameraZoom.valueChanged.connect(self.zoomChanged)
 		1
-		
+
 		# init widgets
 		self.updateHolesTable()
 		self.cameraWidget.setZoom(self.cameraZoom)
@@ -97,7 +97,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		if not LinuxCNCInstalled():
 			QMessageBox.information(self, "LinuxCNC", "Please install LinuxCNC")
 			return
-			
+
 		if not LinuxCNCRunning():
 			QMessageBox.information(self, "LinuxCNC", "Please start LinuxCNC now.")
 
@@ -106,26 +106,27 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		if not self.drills:
 			QMessageBox.information(self, "No drills defined", "Please define some drills first. (Settings -> Drills)")
 			return
-		
+
 		self.cameraWidget.pause()
-		filename = QFileDialog.getOpenFileName(self, "select drill file", self.currentPath, "Drill Files (*.drl *.drd)")
+		filename = str(QFileDialog.getOpenFileName(self, "select drill file", self.currentPath, "Drill Files (*.drl *.drd)").toUtf8())
 		if filename:
 			# load file
 			print(filename)
 			self.rawHoles=readDrillFile(filename)
 			if not self.rawHoles:
 				QMessageBox.critical(self, "File error", "Could not load file.")
+				self.cameraWidget.resume()
 				return
-				
-			
+
+
 			self.currentPath=QFileInfo(filename).absolutePath()
 			self.settings.setValue("currentPath", self.currentPath)
-			
+
 			self.fitHoles=fitHolesToDrills(self.rawHoles, self.drills, self.diaTol)
 			self.updateHolesTable()
 			self.boardDrillsWidget.setAllHoles(self.fitHoles)
 			self.removeAllTrafoPoints()
-			
+
 		self.cameraWidget.resume()
 
 
@@ -247,23 +248,23 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			self.selectedHoles=list()
 			self.updateHolesTable()
 			self.boardDrillsWidget.setAllHoles(self.fitHoles)
-		
+
 		self.cameraWidget.resume()
-		
-		
+
+
 	def action_dialogDrillParameter_triggered(self):
 		self.dialogDrillParameter.setFeedrate(self.feedrate)
 		self.dialogDrillParameter.setDepth(self.drillDepth)
 		self.dialogDrillParameter.setSpacing(self.drillSpacing)
 		self.dialogDrillParameter.setToolChangePos(self.toolChangePos)
-		
+
 		self.cameraWidget.pause()
 		if self.dialogDrillParameter.exec_() == QDialog.Accepted:
 			self.feedrate=self.dialogDrillParameter.getFeedrate()
 			self.drillDepth=self.dialogDrillParameter.getDepth()
 			self.drillSpacing=self.dialogDrillParameter.getSpacing()
 			self.toolChangePos=self.dialogDrillParameter.getToolChangePos()
-			
+
 			self.settings.setValue("feedrate", self.feedrate)
 			self.settings.setValue("drillDepth", self.drillDepth)
 			self.settings.setValue("drillSpacing", self.drillSpacing)
@@ -271,20 +272,20 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			self.settings.setValue("toolChangePosX", x)
 			self.settings.setValue("toolChangePosY", y)
 			self.settings.setValue("toolChangePosZ", z)
-			
+
 		self.cameraWidget.resume()
-	
-			
+
+
 	def action_dialogCamera_triggered(self):
 		self.dialogCamera.setOffset(self.cameraOffset)
-		
+
 		self.cameraWidget.pause()
 		if self.dialogCamera.exec_() == QDialog.Accepted:
 			self.cameraOffset=self.dialogCamera.getOffset()
 			x, y=self.cameraOffset
 			self.settings.setValue("cameraOffsetX", x)
 			self.settings.setValue("cameraOffsetY", y)
-			
+
 		self.cameraWidget.resume()
 
 	def action_writeGCode_triggered(self):
@@ -299,15 +300,15 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			#print(type(path))
 			#print(path)
 			writeGCode(dia, drillPath, self.currentPath, self.feedrate, self.drillDepth, self.drillSpacing, self.toolChangePos)
-			
+
 		QMessageBox.information(self, "G-Code", "Finished!")
-			
-			
+
+
 	def zoomChanged(self):
 		self.cameraZoom=float(self.verticalSlider_cameraZoom.value())/10
 		self.cameraWidget.setZoom(self.cameraZoom)
 		self.settings.setValue("cameraZoom", self.cameraZoom)
-		
+
 
 
 # assign holes to drills from given toolbox
@@ -348,8 +349,8 @@ def fitHolesToDrills(holes, drills, tol):
 		fitHoles[drillDia] |= (holes[dia])
 
 	return fitHoles
-	
-	
+
+
 if __name__ == '__main__':
 
 	app = Qt.QApplication(sys.argv)
