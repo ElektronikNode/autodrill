@@ -36,6 +36,10 @@ class VideoWidget(QWidget):
 
 		self.zoom = 1
 		self.is_connected = False
+		
+		# Paint every 50 ms
+		self._timer = QTimer(self)
+		self._timer.start(50)
 
 		self._capture = cv.CaptureFromCAM(0)
 
@@ -50,10 +54,8 @@ class VideoWidget(QWidget):
 		self._frame = None
 		self._image = self._build_image(frame)
 
-		# Paint every 50 ms
-		self._timer = QTimer(self)
 		self._timer.timeout.connect(self.queryFrame)
-		self._timer.start(50)
+		
 		
 			
 	def setZoom(self, zoom):

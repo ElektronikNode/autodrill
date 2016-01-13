@@ -111,6 +111,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		filename = QFileDialog.getOpenFileName(self, "select drill file", self.currentPath, "Drill Files (*.drl *.drd)")
 		if filename:
 			# load file
+			print(filename)
 			self.rawHoles=readDrillFile(filename)
 			if not self.rawHoles:
 				QMessageBox.critical(self, "File error", "Could not load file.")
