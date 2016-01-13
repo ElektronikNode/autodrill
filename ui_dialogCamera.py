@@ -90,7 +90,7 @@ class Ui_DialogCamera(object):
         QtCore.QMetaObject.connectSlotsByName(DialogCamera)
 
     def retranslateUi(self, DialogCamera):
-        DialogCamera.setWindowTitle(_translate("DialogCamera", "Dialog", None))
+        DialogCamera.setWindowTitle(_translate("DialogCamera", "Camera Settings", None))
         self.groupBox_2.setTitle(_translate("DialogCamera", "Device", None))
         self.groupBox.setTitle(_translate("DialogCamera", "Offset", None))
         self.label.setText(_translate("DialogCamera", "x/y distance of camera with reference to spindle axis", None))

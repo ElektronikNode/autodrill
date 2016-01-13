@@ -3,8 +3,8 @@ import linuxcnc
 try:
 	s = linuxcnc.stat() # create a connection to the status channel
 	s.poll() # get current values
-except linuxcnc.error, detail:
-	print "error", detail
+except linuxcnc.error:
+	print("error"+detail)
 	sys.exit(1)
 
 

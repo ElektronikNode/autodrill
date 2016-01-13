@@ -2,9 +2,8 @@ import cv
 import sys
 
 from PyQt4 import QtGui, QtCore
-from PyQt4.QtCore import QPoint, QTimer
 from PyQt4.QtGui import QApplication, QImage, QPainter, QWidget, QMessageBox
-from PyQt4.QtCore import QObject, SIGNAL, SLOT, QPointF, QRectF, QPointF
+from PyQt4.QtCore import QObject, SIGNAL, SLOT, QPointF, QRectF, QPointF, QPoint, QTimer
 
 
 class IplQImage(QImage):

@@ -1,2 +1,4 @@
-* camera configuaration (Camera Offset, Camera Selection, ...) 
-* drilling parameters (feedrate, z-spacing, depth, drill change position)
+* camera Selection
+* read virtual 0 position from LinuxCNC
+* jog axis direct from autodrill
+* support unicode filenames

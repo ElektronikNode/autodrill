@@ -33,6 +33,7 @@ class BoardDrillsWidget(QWidget):
 
 	def setAllHoles(self, allHoles):
 		self.allHoles = allHoles
+		#print(self.allHoles)
 		self.update()
 
 
@@ -55,13 +56,13 @@ class BoardDrillsWidget(QWidget):
 
 		for drillsize in allHoles:
 			for hole in allHoles[drillsize]:
-				if hole[0] > maxX or maxX is None:
+				if maxX is None or hole[0] > maxX:
 					maxX = hole[0]
-				if hole[0] < self.minX or self.minX is None:
+				if self.minX is None or hole[0] < self.minX:
 					self.minX = hole[0]
-				if hole[1] > maxY or maxY is None:
+				if maxY is None or hole[1] > maxY:
 					maxY = hole[1]
-				if hole[1] < self.minY or self.minY is None:
+				if self.minY is None or hole[1] < self.minY:
 					self.minY = hole[1]
 
 		boardHeight = maxY-self.minY

@@ -76,7 +76,13 @@
      </layout>
     </item>
     <item row="1" column="1">
-     <widget class="QTreeWidget" name="treeWidget_holes"/>
+     <widget class="QTreeWidget" name="treeWidget_holes">
+      <column>
+       <property name="text">
+        <string notr="true">1</string>
+       </property>
+      </column>
+     </widget>
     </item>
     <item row="1" column="2">
      <widget class="QGroupBox" name="groupBox_trafo">
@@ -162,6 +168,7 @@
      <string>S&amp;ettings</string>
     </property>
     <addaction name="action_dialogDrills"/>
+    <addaction name="action_dialogDrillParameter"/>
     <addaction name="action_dialogCamera"/>
    </widget>
    <addaction name="menuFile"/>
@@ -186,6 +193,11 @@
   <action name="action_writeGCode">
    <property name="text">
     <string>&amp;Write G-Code Files</string>
+   </property>
+  </action>
+  <action name="action_dialogDrillParameter">
+   <property name="text">
+    <string>Drill Parameter</string>
    </property>
   </action>
  </widget>

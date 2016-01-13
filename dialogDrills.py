@@ -16,7 +16,7 @@ class DialogDrills(QDialog, Ui_DialogDrills):
 		self.pushButton_cancel.clicked.connect(self.cancel_clicked)
 		
 		self.drills=list()
-		self.holeTol=None
+		self.diaTol=None
 		
 		
 	def cellChanged(self, row, column):
@@ -40,12 +40,12 @@ class DialogDrills(QDialog, Ui_DialogDrills):
 						else:
 							raise
 							
-			holeTol=float(self.lineEdit_holeTol.text())
-			if holeTol<0:
+			diaTol=float(self.lineEdit_holeTol.text())
+			if diaTol<0:
 				raise
 				
 			self.drills=drills
-			self.holeTol=holeTol
+			self.diaTol=diaTol
 			if not drills:
 				raise
 			
@@ -61,7 +61,7 @@ class DialogDrills(QDialog, Ui_DialogDrills):
 		return self.drills
 		
 	def getHoleTol(self):
-		return self.holeTol
+		return self.diaTol
 		
 	def setDrills(self, drills):
 		self.drills=drills
@@ -73,8 +73,8 @@ class DialogDrills(QDialog, Ui_DialogDrills):
 			item=QTableWidgetItem(str(drills[i]))
 			self.tableWidget_drills.setItem(i, 0, item)
 	
-	def setHoleTol(self, holeTol):
-		self.holeTol=holeTol
+	def setHoleTol(self, diaTol):
+		self.diaTol=diaTol
 		
-		self.lineEdit_holeTol.setText(str(holeTol))
+		self.lineEdit_holeTol.setText(str(diaTol))
 

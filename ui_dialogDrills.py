@@ -86,7 +86,7 @@ class Ui_DialogDrills(object):
         QtCore.QMetaObject.connectSlotsByName(DialogDrills)
 
     def retranslateUi(self, DialogDrills):
-        DialogDrills.setWindowTitle(_translate("DialogDrills", "Dialog", None))
+        DialogDrills.setWindowTitle(_translate("DialogDrills", "Drills", None))
         self.groupBox.setTitle(_translate("DialogDrills", "Drills", None))
         self.tableWidget_drills.setSortingEnabled(True)
         item = self.tableWidget_drills.verticalHeaderItem(0)
