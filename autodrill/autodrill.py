@@ -5,14 +5,14 @@ from PyQt4.QtGui import QMainWindow, QTreeWidget, QTreeWidgetItem, QFileDialog, 
 from PyQt4.QtCore import QSettings, QCoreApplication, QVariant, QFileInfo
 from PyQt4 import Qt
 
-from ui_mainwindow import Ui_MainWindow
+from ui.ui_mainwindow import Ui_MainWindow
 
 from BoardDrillsWidget import BoardDrillsWidget
 from VideoWidget import VideoWidget
 from DrillCam import DrillCam
-from dialogDrills import DialogDrills
-from dialogDrillParameter import DialogDrillParameter
-from dialogCamera import DialogCamera
+from ui.dialogDrills import DialogDrills
+from ui.dialogDrillParameter import DialogDrillParameter
+from ui.dialogCamera import DialogCamera
 
 from readDrillFile import *
 from bilinearTrafo import *
