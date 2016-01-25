@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'dialogDrills.ui'
+# Form implementation generated from reading ui file 'autodrill/ui/dialogDrills.ui'
 #
 # Created by: PyQt4 UI code generator 4.11.4
 #

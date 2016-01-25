@@ -1,3 +1,21 @@
+'''
+autodrill is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+autodrill is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with autodrill. If not, see < http://www.gnu.org/licenses/ >.
+
+(C) 2014- by Friedrich Feichtinger, <fritz_feichtinger@aon.at>
+(C) 2014- by Thomas Pointhuber, <thomas.pointhuber@gmx.at>
+'''
+
 import cv
 import sys
 
@@ -36,7 +54,7 @@ class VideoWidget(QWidget):
 
 		self.zoom = 1
 		self.is_connected = False
-		
+
 		# Paint every 50 ms
 		self._timer = QTimer(self)
 		self._timer.start(50)
@@ -55,9 +73,9 @@ class VideoWidget(QWidget):
 		self._image = self._build_image(frame)
 
 		self._timer.timeout.connect(self.queryFrame)
-		
-		
-			
+
+
+
 	def setZoom(self, zoom):
 		self.zoom=zoom
 
@@ -134,10 +152,10 @@ class VideoWidget(QWidget):
 		self.is_connected = True
 		self._image = self._build_image(frame)
 		self.update()
-		
-		
+
+
 	def pause(self):
 		self._timer.stop()
-		
+
 	def resume(self):
 		self._timer.start()
