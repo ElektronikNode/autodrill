@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
 
-from PyQt4.QtGui import QMainWindow, QTreeWidget, QTreeWidgetItem, QFileDialog, QDialog, QMessageBox
+from PyQt4.QtGui import QMainWindow, QTreeWidget, QTreeWidgetItem, QFileDialog, QDialog, QMessageBox, QKeyEvent
 from PyQt4.QtCore import QSettings, QCoreApplication, QVariant, QFileInfo
-from PyQt4 import Qt
+from PyQt4 import Qt, QtCore
 
 from ui_mainwindow import Ui_MainWindow
 
@@ -21,6 +21,12 @@ from writeGCode import *
 from machineInterface import *
 
 import sys
+
+
+# jog speeds (mm/s ?)
+SLOWJOG=10
+FASTJOG=1000
+
 
 class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 
@@ -101,6 +107,13 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		if not LinuxCNCRunning():
 			QMessageBox.information(self, "LinuxCNC", "Please start LinuxCNC now.")
 
+		# for jogging
+		self.grabKeyboard()
+		self.jogSpeed=SLOWJOG
+		self.jogAxes=[0, 0, 0]
+		
+		
+		
 
 	def action_loadDrillFile_triggered(self):
 		if not self.drills:
@@ -308,7 +321,60 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.cameraZoom=float(self.verticalSlider_cameraZoom.value())/10
 		self.cameraWidget.setZoom(self.cameraZoom)
 		self.settings.setValue("cameraZoom", self.cameraZoom)
+		
+		
+	def keyPressEvent(self, e):
+		
+		#if(e.modifiers()==QtCore.Qt.ShiftModifier):
+		#	self.jogSpeed=1000	# (mm/s ?) fast jog mode
+		#else:
+		#	self.jogSpeed=10	# (mm/s ?) slow jog mode
 
+		if(e.key()==QtCore.Qt.Key_Escape):
+			print("EStop")
+			# TODO
+			
+		elif e.key()==QtCore.Qt.Key_Shift:
+			self.jogSpeed=FASTJOG	# switch to fast jog mode
+			
+		elif e.key()==QtCore.Qt.Key_Up:
+			self.jogAxes[1]=1
+		elif e.key()==QtCore.Qt.Key_Down:
+			self.jogAxes[1]=-1
+		elif e.key()==QtCore.Qt.Key_Left:
+			self.jogAxes[0]=-1
+		elif e.key()==QtCore.Qt.Key_Right:
+			self.jogAxes[0]=1
+		elif e.key()==QtCore.Qt.Key_PageUp:
+			self.jogAxes[2]=1
+		elif e.key()==QtCore.Qt.Key_PageDown:
+			self.jogAxes[2]=-1
+			
+		self.updateJog()
+
+
+	def keyReleaseEvent(self, e):
+		if e.key()==QtCore.Qt.Key_Shift:
+			self.jogSpeed=SLOWJOG	# switch to slow jog mode
+			
+		elif e.key()==QtCore.Qt.Key_Up or e.key()==QtCore.Qt.Key_Down:
+			self.jogAxes[1]=0
+		elif e.key()==QtCore.Qt.Key_Left or e.key()==QtCore.Qt.Key_Right:
+			self.jogAxes[0]=0
+		elif e.key()==QtCore.Qt.Key_PageUp or e.key()==QtCore.Qt.Key_PageDown:
+			self.jogAxes[2]=0
+			
+		self.updateJog()
+			
+			
+	def updateJog(self):
+		for i in range(3):
+			if self.jogAxes[i]>0:
+				jogAxis(i, self.jogSpeed)
+			elif self.jogAxes[i]<0:
+				jogAxis(i, -self.jogSpeed)
+			else:
+				stopAxis(i)
 
 
 # assign holes to drills from given toolbox

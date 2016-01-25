@@ -25,3 +25,25 @@ def getMachinePosition():
 		return (s.position[0], s.position[1])
 	except linuxcnc.error:
 		print("Could not connect to LinuxCNC.")
+		
+		
+def jogAxis(axis, speed):
+	try:
+		c=linuxcnc.command()
+			
+		c.jog(linuxcnc.JOG_CONTINUOUS, axis, speed)
+		
+	except linuxcnc.error:
+		print("Could not connect to LinuxCNC.")
+		
+		
+		
+def stopAxis(axis):
+	try:
+		c=linuxcnc.command()
+			
+		c.jog(linuxcnc.JOG_STOP, axis)
+	except linuxcnc.error:
+		print("Could not connect to LinuxCNC.")
+		
+		
