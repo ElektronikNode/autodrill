@@ -39,7 +39,7 @@ def getMachinePosition():
 	try:
 		s = linuxcnc.stat() # create a connection to the status channel
 		s.poll() 			# get current values
-		return (s.position[0], s.position[1])
+		return (s.position[0]-s.g5x_offset[0], s.position[1]-s.g5x_offset[1], s.position[2]-s.g5x_offset[2])
 	except linuxcnc.error:
 		print("Could not connect to LinuxCNC.")
 		

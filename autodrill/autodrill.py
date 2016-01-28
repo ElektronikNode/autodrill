@@ -19,7 +19,7 @@ along with autodrill. If not, see < http://www.gnu.org/licenses/ >.
 '''
 
 from PyQt4.QtGui import QMainWindow, QTreeWidget, QTreeWidgetItem, QFileDialog, QDialog, QMessageBox, QKeyEvent
-from PyQt4.QtCore import QSettings, QCoreApplication, QVariant, QFileInfo
+from PyQt4.QtCore import QSettings, QCoreApplication, QVariant, QFileInfo, QTimer
 from PyQt4 import Qt, QtCore
 
 from ui.ui_mainwindow import Ui_MainWindow
@@ -41,7 +41,7 @@ import sys
 
 
 # jog speeds (mm/s ?)
-SLOWJOG=10
+SLOWJOG=1
 FASTJOG=1000
 
 
@@ -50,8 +50,12 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 	def __init__(self):
 		QMainWindow.__init__(self)
 
+		# for QSettings
 		QCoreApplication.setOrganizationName("Feichtinger");
 		QCoreApplication.setApplicationName("Autodrill");
+		
+		self.updateTimer=QTimer()
+		self.updateTimer.start(50);
 
 
 		# set up the user interface from Designer.
@@ -108,7 +112,8 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.pushButton_removeAll.clicked.connect(self.removeAllTrafoPoints)
 
 		self.verticalSlider_cameraZoom.valueChanged.connect(self.zoomChanged)
-		1
+		
+		self.updateTimer.timeout.connect(self.updatePositionLabel)
 
 		# init widgets
 		self.updateHolesTable()
@@ -225,7 +230,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			return
 
 		# get machine coordinates and add camera offset
-		xm, ym = getMachinePosition()
+		xm, ym, zm = getMachinePosition()
 		xo, yo = self.cameraOffset
 		self.trafoMachinePoints.append((xm+xo, ym+yo))
 
@@ -341,12 +346,6 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		
 		
 	def keyPressEvent(self, e):
-		
-		#if(e.modifiers()==QtCore.Qt.ShiftModifier):
-		#	self.jogSpeed=1000	# (mm/s ?) fast jog mode
-		#else:
-		#	self.jogSpeed=10	# (mm/s ?) slow jog mode
-
 		if(e.key()==QtCore.Qt.Key_Escape):
 			print("EStop")
 			# TODO
@@ -392,6 +391,11 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 				jogAxis(i, -self.jogSpeed)
 			else:
 				stopAxis(i)
+				
+				
+	def updatePositionLabel(self):
+		x, y, z = getMachinePosition()
+		self.statusBar().showMessage("X: {:.2f}  Y: {:.2f}  Z: {:.2f}".format(x, y, z))
 
 
 # assign holes to drills from given toolbox
