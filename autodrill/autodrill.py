@@ -39,6 +39,9 @@ from machineInterface import *
 
 import sys
 
+import signal
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
 
 # jog speeds (mm/s ?)
 SLOWJOG=1
