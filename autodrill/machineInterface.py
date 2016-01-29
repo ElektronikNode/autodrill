@@ -15,6 +15,11 @@ along with autodrill. If not, see < http://www.gnu.org/licenses/ >.
 (C) 2014- by Friedrich Feichtinger, <fritz_feichtinger@aon.at>
 '''
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 try:
 	import linuxcnc
 	linuxcnc_available=True
@@ -33,32 +38,68 @@ def LinuxCNCRunning():
 		return True
 	except linuxcnc.error:
 		return False
-		
-		
+
+
 def getMachinePosition():
 	try:
 		s = linuxcnc.stat() # create a connection to the status channel
 		s.poll() 			# get current values
 		return (s.position[0]-s.g5x_offset[0], s.position[1]-s.g5x_offset[1], s.position[2]-s.g5x_offset[2])
 	except linuxcnc.error:
-		print("Could not connect to LinuxCNC.")
-		
-		
-def jogAxis(axis, speed):
+		logger.debug("Could not connect to LinuxCNC.")
+		return (0,0,0)
+
+
+def isEmergencyStopPressed():
 	try:
-		c=linuxcnc.command()
-			
-		c.jog(linuxcnc.JOG_CONTINUOUS, axis, speed)
-		
+		s = linuxcnc.stat() # create a connection to the status channel
+		s.poll() 			# get current values
+		return s.estop
 	except linuxcnc.error:
-		print("Could not connect to LinuxCNC.")
-		
-		
-		
-def stopAxis(axis):
+		logger.debug("Could not connect to LinuxCNC.")
+		return None
+
+
+def isMachineEnabled():
+	try:
+		s = linuxcnc.stat() # create a connection to the status channel
+		s.poll() 			# get current values
+		return s.enabled and not s.estop
+	except linuxcnc.error:
+		logger.debug("Could not connect to LinuxCNC.")
+		return None
+
+
+def isMachineHomed():
+	try:
+		s = linuxcnc.stat() # create a connection to the status channel
+		s.poll() 			# get current values
+		return s.homed
+	except linuxcnc.error:
+		logger.debug("Could not connect to LinuxCNC.")
+		return None
+
+
+def jogAxis(axis, speed):
+	if not isMachineEnabled():
+		return
+
 	try:
 		c=linuxcnc.command()
-			
+
+		c.jog(linuxcnc.JOG_CONTINUOUS, axis, speed)
+
+	except linuxcnc.error:
+		logger.debug("Could not connect to LinuxCNC.")
+
+
+def stopAxis(axis):
+	if not isMachineEnabled():
+		return
+
+	try:
+		c=linuxcnc.command()
+
 		c.jog(linuxcnc.JOG_STOP, axis)
 	except linuxcnc.error:
-		print("Could not connect to LinuxCNC.")
+		logger.debug("Could not connect to LinuxCNC.")
