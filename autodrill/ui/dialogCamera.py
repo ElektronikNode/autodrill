@@ -18,8 +18,6 @@ along with autodrill. If not, see < http://www.gnu.org/licenses/ >.
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QDialog, QMessageBox, QTableWidgetItem
 
-from machineInterface import *
-
 from ui_dialogCamera import Ui_DialogCamera
 
 class DialogCamera(QDialog, Ui_DialogCamera):

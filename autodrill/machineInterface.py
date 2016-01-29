@@ -15,9 +15,8 @@ along with autodrill. If not, see < http://www.gnu.org/licenses/ >.
 (C) 2014- by Friedrich Feichtinger, <fritz_feichtinger@aon.at>
 '''
 
-import logging
-
-logger = logging.getLogger(__name__)
+from logger import logger
+logger = logger.getChild(__name__)
 
 
 try:
@@ -25,6 +24,7 @@ try:
 	linuxcnc_available=True
 except ImportError:
 	linuxcnc_available=False
+	logger.warning("could not find LinuxCNC")
 
 
 def LinuxCNCInstalled():
@@ -46,7 +46,7 @@ def getMachinePosition():
 		s.poll() 			# get current values
 		return (s.position[0]-s.g5x_offset[0], s.position[1]-s.g5x_offset[1], s.position[2]-s.g5x_offset[2])
 	except linuxcnc.error:
-		logger.debug("Could not connect to LinuxCNC.")
+		logger.warning("Could not connect to LinuxCNC.")
 		return (0,0,0)
 
 
@@ -56,7 +56,7 @@ def isEmergencyStopPressed():
 		s.poll() 			# get current values
 		return s.estop
 	except linuxcnc.error:
-		logger.debug("Could not connect to LinuxCNC.")
+		logger.warning("Could not connect to LinuxCNC.")
 		return None
 
 
@@ -66,7 +66,7 @@ def isMachineEnabled():
 		s.poll() 			# get current values
 		return s.enabled and not s.estop
 	except linuxcnc.error:
-		logger.debug("Could not connect to LinuxCNC.")
+		logger.warning("Could not connect to LinuxCNC.")
 		return None
 
 
@@ -76,7 +76,7 @@ def isMachineHomed():
 		s.poll() 			# get current values
 		return s.homed
 	except linuxcnc.error:
-		logger.debug("Could not connect to LinuxCNC.")
+		logger.warning("Could not connect to LinuxCNC.")
 		return None
 
 
@@ -90,7 +90,7 @@ def jogAxis(axis, speed):
 		c.jog(linuxcnc.JOG_CONTINUOUS, axis, speed)
 
 	except linuxcnc.error:
-		logger.debug("Could not connect to LinuxCNC.")
+		logger.warning("Could not connect to LinuxCNC.")
 
 
 def stopAxis(axis):
@@ -102,4 +102,4 @@ def stopAxis(axis):
 
 		c.jog(linuxcnc.JOG_STOP, axis)
 	except linuxcnc.error:
-		logger.debug("Could not connect to LinuxCNC.")
+		logger.warning("Could not connect to LinuxCNC.")

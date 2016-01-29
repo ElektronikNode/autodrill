@@ -39,6 +39,9 @@ from machineInterface import *
 
 import sys
 
+from logger import logger
+logger = logger.getChild(__name__)
+
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 

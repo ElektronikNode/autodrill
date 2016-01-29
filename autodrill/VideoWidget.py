@@ -23,6 +23,9 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QApplication, QImage, QPainter, QWidget, QMessageBox
 from PyQt4.QtCore import QObject, SIGNAL, SLOT, QPointF, QRectF, QPointF, QPoint, QTimer
 
+from logger import logger
+logger = logger.getChild(__name__)
+
 
 class IplQImage(QImage):
 	"""
@@ -65,6 +68,7 @@ class VideoWidget(QWidget):
 		frame = cv.QueryFrame(self._capture)
 		if frame is None:
 			QMessageBox.information(self, "Could not open camera", "Please configure/enable camera");
+			logger.warning("could not open camera")
 			return
 
 		self.is_connected = True
