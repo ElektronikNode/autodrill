@@ -148,7 +148,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		filename = str(QFileDialog.getOpenFileName(self, "select drill file", self.currentPath, "Drill Files (*.drl *.drd)").toUtf8())
 		if filename:
 			# load file
-			print(filename)
+			logger.info("loading file: {0}".format(filename))
 			self.rawHoles=readDrillFile(filename)
 			if not self.rawHoles:
 				QMessageBox.critical(self, "File error", "Could not load file.")
@@ -225,10 +225,10 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 	def addTrafoPoint(self):
 		#print("Move CNC over hole and select it!")
 		if len(self.selectedHoles) == 0:
-			QMessageBox.information("Transformation", "Please select a hole first.")
+			QMessageBox.information(self, "Transformation", "Please select a hole first.")
 			return
 		if len(self.selectedHoles) != 1:
-			QMessageBox.warning("Transformation", "Please select only one point.")
+			QMessageBox.warning(self, "Transformation", "Please select only one point.")
 			return
 
 		# get machine coordinates and add camera offset
@@ -348,9 +348,9 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 
 
 	def keyPressEvent(self, e):
-		if(e.key()==QtCore.Qt.Key_Escape):
-			print("EStop")
-			# TODO
+		if e.key()==QtCore.Qt.Key_Escape and LinuxCNCRunning():
+			logger.warning("EStop triggered")
+			triggerEmergencyStop()
 
 		elif e.key()==QtCore.Qt.Key_Shift:
 			self.jogSpeed=FASTJOG	# switch to fast jog mode
