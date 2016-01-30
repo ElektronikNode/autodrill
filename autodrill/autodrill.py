@@ -63,7 +63,6 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.updateTimer=QTimer()
 		self.updateTimer.start(50);
 
-
 		# set up the user interface from Designer.
 		self.setupUi(self)
 
@@ -139,8 +138,6 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.grabKeyboard()
 		self.jogSpeed=SLOWJOG
 		self.jogAxes=[0, 0, 0]
-
-
 
 
 	def action_loadDrillFile_triggered(self):
@@ -372,7 +369,8 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		elif e.key()==QtCore.Qt.Key_PageDown:
 			self.jogAxes[2]=-1
 
-		self.updateJog()
+		if LinuxCNCRunning() and not e.isAutoRepeat():
+			self.updateJog()
 
 
 	def keyReleaseEvent(self, e):
@@ -386,7 +384,8 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		elif e.key()==QtCore.Qt.Key_PageUp or e.key()==QtCore.Qt.Key_PageDown:
 			self.jogAxes[2]=0
 
-		self.updateJog()
+		if LinuxCNCRunning() and not e.isAutoRepeat():
+			self.updateJog()
 
 
 	def updateJog(self):
