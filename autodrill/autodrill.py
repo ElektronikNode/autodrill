@@ -43,7 +43,6 @@ from logger import logger
 logger = logger.getChild(__name__)
 
 import signal
-signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
 # jog speeds (mm/s ?)
@@ -388,6 +387,12 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			self.updateJog()
 
 
+	def closeEvent(self, e):
+		if LinuxCNCRunning():
+			self.jogAxes=[0,0,0]
+			self.updateJog()
+
+
 	def updateJog(self):
 		for i in range(3):
 			if self.jogAxes[i]>0:
@@ -468,5 +473,12 @@ if __name__ == '__main__':
 	app = Qt.QApplication(sys.argv)
 	ui = AutodrillMainWindow()
 	ui.show()
+
+	def siging_handler(e, frame):
+		ui.jogAxes=[0,0,0]
+		ui.updateJog()
+		sys.exit(0)
+
+	signal.signal(signal.SIGINT, siging_handler)
 
 	sys.exit(app.exec_())
