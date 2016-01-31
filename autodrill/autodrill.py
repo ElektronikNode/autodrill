@@ -65,6 +65,9 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		# set up the user interface from Designer.
 		self.setupUi(self)
 
+		self.setFocusPolicy(QtCore.Qt.StrongFocus)
+		self.installEventFilter(self)
+
 		self.boardDrillsWidget = BoardDrillsWidget()
 		self.gridLayout.addWidget(self.boardDrillsWidget, 0, 0, 2, 1)
 
@@ -134,7 +137,6 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			QMessageBox.information(self, "LinuxCNC", "Please start LinuxCNC now.")
 
 		# for jogging
-		self.grabKeyboard()
 		self.jogSpeed=SLOWJOG
 		self.jogAxes=[0, 0, 0]
 
@@ -387,10 +389,27 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			self.updateJog()
 
 
+	def focusOutEvent(self, e):
+		if LinuxCNCRunning():
+			self.jogAxes=[0,0,0]
+			self.updateJog()
+
+
 	def closeEvent(self, e):
 		if LinuxCNCRunning():
 			self.jogAxes=[0,0,0]
 			self.updateJog()
+
+
+	def eventFilter(self, obj, event):
+		if event.type() == QtCore.QEvent.WindowDeactivate:
+			if LinuxCNCRunning():
+				self.jogAxes=[0,0,0]
+				self.updateJog()
+
+			return True
+
+		return False
 
 
 	def updateJog(self):
