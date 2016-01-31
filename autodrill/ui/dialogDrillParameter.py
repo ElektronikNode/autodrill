@@ -20,6 +20,12 @@ from PyQt4.QtGui import QDialog, QMessageBox, QPixmap
 
 from ui_dialogDrillParameter import Ui_DialogDrillParameter
 
+import os
+
+
+autodrill_root = os.path.join(os.path.dirname(os.path.abspath(__file__)),"..")
+
+
 class DialogDrillParameter(QDialog, Ui_DialogDrillParameter):
 	def __init__(self, parent=None):
 		QDialog.__init__(self, parent)
@@ -27,7 +33,7 @@ class DialogDrillParameter(QDialog, Ui_DialogDrillParameter):
 		# Set up the user interface from Designer.
 		self.setupUi(self)
 
-		self.label_sketch.setPixmap(QPixmap("assets/images/drill_parameter.png"))
+		self.label_sketch.setPixmap(QPixmap(os.path.join(autodrill_root,"assets/images/drill_parameter.png")))
 		self.pushButton_OK.clicked.connect(self.OK_clicked)
 		self.pushButton_cancel.clicked.connect(self.cancel_clicked)
 

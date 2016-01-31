@@ -43,7 +43,6 @@ from logger import logger
 logger = logger.getChild(__name__)
 
 import signal
-signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
 # jog speeds (mm/s ?)
@@ -63,9 +62,11 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.updateTimer=QTimer()
 		self.updateTimer.start(50);
 
-
 		# set up the user interface from Designer.
 		self.setupUi(self)
+
+		self.setFocusPolicy(QtCore.Qt.StrongFocus)
+		self.installEventFilter(self)
 
 		self.boardDrillsWidget = BoardDrillsWidget()
 		self.gridLayout.addWidget(self.boardDrillsWidget, 0, 0, 2, 1)
@@ -136,11 +137,8 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			QMessageBox.information(self, "LinuxCNC", "Please start LinuxCNC now.")
 
 		# for jogging
-		self.grabKeyboard()
 		self.jogSpeed=SLOWJOG
 		self.jogAxes=[0, 0, 0]
-
-
 
 
 	def action_loadDrillFile_triggered(self):
@@ -152,7 +150,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		filename = str(QFileDialog.getOpenFileName(self, "select drill file", self.currentPath, "Drill Files (*.drl *.drd)").toUtf8())
 		if filename:
 			# load file
-			print(filename)
+			logger.info("loading file: {0}".format(filename))
 			self.rawHoles=readDrillFile(filename)
 			if not self.rawHoles:
 				QMessageBox.critical(self, "File error", "Could not load file.")
@@ -229,10 +227,10 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 	def addTrafoPoint(self):
 		#print("Move CNC over hole and select it!")
 		if len(self.selectedHoles) == 0:
-			QMessageBox.information("Transformation", "Please select a hole first.")
+			QMessageBox.information(self, "Transformation", "Please select a hole first.")
 			return
 		if len(self.selectedHoles) != 1:
-			QMessageBox.warning("Transformation", "Please select only one point.")
+			QMessageBox.warning(self, "Transformation", "Please select only one point.")
 			return
 
 		# get machine coordinates and add camera offset
@@ -352,9 +350,9 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 
 
 	def keyPressEvent(self, e):
-		if(e.key()==QtCore.Qt.Key_Escape):
-			print("EStop")
-			# TODO
+		if e.key()==QtCore.Qt.Key_Escape and LinuxCNCRunning():
+			logger.warning("EStop triggered")
+			triggerEmergencyStop()
 
 		elif e.key()==QtCore.Qt.Key_Shift:
 			self.jogSpeed=FASTJOG	# switch to fast jog mode
@@ -372,7 +370,8 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		elif e.key()==QtCore.Qt.Key_PageDown:
 			self.jogAxes[2]=-1
 
-		self.updateJog()
+		if LinuxCNCRunning() and not e.isAutoRepeat():
+			self.updateJog()
 
 
 	def keyReleaseEvent(self, e):
@@ -386,7 +385,31 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		elif e.key()==QtCore.Qt.Key_PageUp or e.key()==QtCore.Qt.Key_PageDown:
 			self.jogAxes[2]=0
 
-		self.updateJog()
+		if LinuxCNCRunning() and not e.isAutoRepeat():
+			self.updateJog()
+
+
+	def focusOutEvent(self, e):
+		if LinuxCNCRunning():
+			self.jogAxes=[0,0,0]
+			self.updateJog()
+
+
+	def closeEvent(self, e):
+		if LinuxCNCRunning():
+			self.jogAxes=[0,0,0]
+			self.updateJog()
+
+
+	def eventFilter(self, obj, event):
+		if event.type() == QtCore.QEvent.WindowDeactivate:
+			if LinuxCNCRunning():
+				self.jogAxes=[0,0,0]
+				self.updateJog()
+
+			return True
+
+		return False
 
 
 	def updateJog(self):
@@ -469,5 +492,12 @@ if __name__ == '__main__':
 	app = Qt.QApplication(sys.argv)
 	ui = AutodrillMainWindow()
 	ui.show()
+
+	def siging_handler(e, frame):
+		ui.jogAxes=[0,0,0]
+		ui.updateJog()
+		sys.exit(0)
+
+	signal.signal(signal.SIGINT, siging_handler)
 
 	sys.exit(app.exec_())

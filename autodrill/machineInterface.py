@@ -103,3 +103,11 @@ def stopAxis(axis):
 		c.jog(linuxcnc.JOG_STOP, axis)
 	except linuxcnc.error:
 		logger.warning("Could not connect to LinuxCNC.")
+
+
+def triggerEmergencyStop():
+	try:
+		c=linuxcnc.command()
+		c.state(linuxcnc.STATE_ESTOP)
+	except linuxcnc.error:
+		logger.warning("Could not connect to LinuxCNC.")
