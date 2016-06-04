@@ -223,6 +223,11 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.updateHolesTable()
 		#print(holeID)
 
+	def holeUnselect(self):
+		self.selectedHoles=list()
+		self.boardDrillsWidget.setSelectedHoles(self.selectedHoles)
+		self.updateHolesTable()
+
 
 	def addTrafoPoint(self):
 		#print("Move CNC over hole and select it!")
@@ -240,6 +245,10 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 
 		# get coordinate of selected hole
 		x, y, ID = self.selectedHoles[0]
+		if (x, y) in self.trafoPoints:
+			QMessageBox.warning(self, "Transformation", "Hole was already added.")
+			return
+
 		self.trafoPoints.append((x, y))
 
 		self.label_trafoPoints.setText(str(len(self.trafoPoints)))
@@ -247,6 +256,8 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		if len(self.trafoPoints) == 4:
 			# 4 points are enough
 			self.pushButton_addPoint.setEnabled(False)
+
+		self.holeUnselect()
 
 
 	def removeAllTrafoPoints(self):
