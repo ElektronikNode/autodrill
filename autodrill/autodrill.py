@@ -116,6 +116,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.boardDrillsWidget.holeSelected.connect(self.holeSelected)
 
 		self.pushButton_addPoint.clicked.connect(self.addTrafoPoint)
+		self.pushButton_removeLast.clicked.connect(self.removeLastTrafoPoints)
 		self.pushButton_removeAll.clicked.connect(self.removeAllTrafoPoints)
 
 		self.verticalSlider_cameraZoom.valueChanged.connect(self.zoomChanged)
@@ -257,7 +258,20 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			# 4 points are enough
 			self.pushButton_addPoint.setEnabled(False)
 
+		self.pushButton_removeLast.setEnabled(True)
+		self.pushButton_removeAll.setEnabled(True)
+
 		self.holeUnselect()
+
+
+	def removeLastTrafoPoints(self):
+		self.trafoPoints=self.trafoPoints[:-1]
+		self.trafoMachinePoints=self.trafoMachinePoints[:-1]
+		self.label_trafoPoints.setText(str(len(self.trafoPoints)))
+		self.pushButton_addPoint.setEnabled(True)
+		if len(self.trafoPoints) == 0:
+			self.pushButton_removeLast.setEnabled(False)
+			self.pushButton_removeAll.setEnabled(False)
 
 
 	def removeAllTrafoPoints(self):
@@ -265,6 +279,8 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.trafoMachinePoints=list()
 		self.label_trafoPoints.setText("0")
 		self.pushButton_addPoint.setEnabled(True)
+		self.pushButton_removeLast.setEnabled(False)
+		self.pushButton_removeAll.setEnabled(False)
 
 
 	def getHole(self, holeID):
