@@ -1,3 +1,1 @@
 * camera Selection
-* read virtual 0 position from LinuxCNC
-* jog axis direct from autodrill

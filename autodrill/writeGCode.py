@@ -25,9 +25,15 @@ def writeGCode(dia, drillPath, pathName, feedrate, depth, spacing, toolChangePos
 	#file.write("G21\n")								# use millimeters
 	file.write("F{:f}\n".format(feedrate*60))			# set feedrate (mm/min)
 
-	file.write("M03\n")														# turn on spindle
+
+	x, y, z = toolChangePosition
+	file.write("G00 Z{:.3f}\n".format(z))									# first go up for savety
+	
 	x, y = drillPath[0]
-	file.write("G00 X{:.3f} Y{:.3f} Z{:.3f}\n".format(x, y, spacing))		# place drill over first hole
+	file.write("G00 X{:.3f} Y{:.3f}\n".format(x, y))						# place drill over first hole
+	file.write("G00 Z{:.3f}\n".format(spacing))								# go down
+	
+	file.write("M03\n")														# turn on spindle
 	file.write("G04 P1.0\n")												# wait 1 second (to turn up spindle)
 
 	# start drilling path
@@ -48,7 +54,8 @@ def writeGCode(dia, drillPath, pathName, feedrate, depth, spacing, toolChangePos
 	# final G-codes
 	file.write("M05\n")												# turn off spindle
 	x, y, z = toolChangePosition
-	file.write("G00 X{:.3f} Y{:.3f} Z{:.3f}\n".format(x, y, z))		# go back to drill change position
+	file.write("G00 Z{:.3f}\n".format(z))							# first go up
+	file.write("G00 X{:.3f} Y{:.3f}\n".format(x, y))				# go back to drill change position
 	file.write("M02\n")												# end of program
 
 	file.close()
