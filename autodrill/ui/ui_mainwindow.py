@@ -49,6 +49,7 @@ class Ui_MainWindow(object):
         self.gridLayout_zoom = QtGui.QGridLayout()
         self.gridLayout_zoom.setObjectName(_fromUtf8("gridLayout_zoom"))
         self.verticalSlider_cameraZoom = QtGui.QSlider(self.centralwidget)
+        self.verticalSlider_cameraZoom.setFocusPolicy(QtCore.Qt.NoFocus)
         self.verticalSlider_cameraZoom.setMinimum(10)
         self.verticalSlider_cameraZoom.setMaximum(100)
         self.verticalSlider_cameraZoom.setSingleStep(1)

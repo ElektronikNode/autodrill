@@ -128,6 +128,9 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.cameraWidget.setZoom(self.cameraZoom)
 		self.verticalSlider_cameraZoom.setValue(self.cameraZoom*10)
 
+		if not self.cameraWidget.cameraAvailable():
+			self.verticalSlider_cameraZoom.setEnabled(False)
+
 
 		# check for LinuxCNC
 		if not LinuxCNCInstalled():

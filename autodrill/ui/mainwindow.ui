@@ -39,6 +39,9 @@
      <layout class="QGridLayout" name="gridLayout_zoom">
       <item row="1" column="0">
        <widget class="QSlider" name="verticalSlider_cameraZoom">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
         <property name="minimum">
          <number>10</number>
         </property>
