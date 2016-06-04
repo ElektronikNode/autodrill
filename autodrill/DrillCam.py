@@ -16,8 +16,7 @@ along with autodrill. If not, see < http://www.gnu.org/licenses/ >.
 (C) 2014- by Thomas Pointhuber, <thomas.pointhuber@gmx.at>
 '''
 
-import cv
-from VideoWidget import VideoWidget
+from VideoWidget import VideoWidget, opencv_available
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QApplication, QImage, QPainter, QWidget
 from PyQt4.QtCore import QRectF
@@ -60,3 +59,7 @@ class DrillCam(VideoWidget):
 
 		qp.drawLine(mid_x, 0 , mid_x, size.height())
 		qp.drawLine(0, mid_y , size.width(), mid_y)
+
+
+	def cameraAvailable(self):
+		return opencv_available  # TODO: detect if camera gives frames
