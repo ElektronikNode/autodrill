@@ -15,9 +15,16 @@ along with autodrill. If not, see < http://www.gnu.org/licenses/ >.
 (C) 2014- by Friedrich Feichtinger, <fritz_feichtinger@aon.at>
 '''
 
-def writeGCode(dia, drillPath, pathName, feedrate, depth, spacing, toolChangePosition):
+from PyQt4.QtCore import QFile, QFileInfo, QIODevice
 
-	file=open(pathName+"/"+str(dia)+".ngc", "w")
+def writeGCode(dia, drillPath, originalFilename, feedrate, depth, spacing, toolChangePosition):
+
+	fi=QFileInfo(originalFilename)
+	filename=fi.absolutePath() + "/" + fi.completeBaseName() + str(dia) + ".ngc"
+	#filename = str(filename.toUtf8())
+	file=QFile(filename)
+	
+	file.open(QIODevice.WriteOnly)
 
 
 	# initial G-codes
