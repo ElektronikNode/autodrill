@@ -16,7 +16,6 @@ along with autodrill. If not, see < http://www.gnu.org/licenses/ >.
 (C) 2014- by Thomas Pointhuber, <thomas.pointhuber@gmx.at>
 '''
 
-import cv
 from VideoWidget import VideoWidget
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QApplication, QImage, QPainter, QWidget
