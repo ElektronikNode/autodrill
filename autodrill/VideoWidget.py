@@ -16,7 +16,6 @@ along with autodrill. If not, see < http://www.gnu.org/licenses/ >.
 (C) 2014- by Thomas Pointhuber, <thomas.pointhuber@gmx.at>
 '''
 
-import cv
 import sys
 
 from PyQt4 import QtGui, QtCore
@@ -26,6 +25,12 @@ from PyQt4.QtCore import QObject, SIGNAL, SLOT, QPointF, QRectF, QPointF, QPoint
 from logger import logger
 logger = logger.getChild(__name__)
 
+try:
+    import cv
+    opencv_available = True
+except ImportError:
+    opencv_available = False
+    logger.warning("could not find OpenCV installation")
 
 class IplQImage(QImage):
 	"""
@@ -33,7 +38,9 @@ class IplQImage(QImage):
 	A class for converting iplimages to qimages
 	"""
 
-	def __init__(self,iplimage):
+	def __init__(self, iplimage):
+		if not opencv_available:
+			return
 		# Rough-n-ready but it works dammit
 		alpha = cv.CreateMat(iplimage.height,iplimage.width, cv.CV_8UC1)
 		cv.Rectangle(alpha, (0, 0), (iplimage.width,iplimage.height), cv.ScalarAll(255) ,-1)
@@ -62,6 +69,8 @@ class VideoWidget(QWidget):
 		self._timer = QTimer(self)
 		self._timer.start(50)
 
+		if not opencv_available:
+			return
 		self._capture = cv.CaptureFromCAM(0)
 
 		# Take one frame to query height
@@ -131,6 +140,16 @@ class VideoWidget(QWidget):
 
 	def paintEvent(self, event):
 		qp = QPainter(self)
+
+		if not opencv_available:
+			# fill background grey
+			qp.setPen(QtCore.Qt.gray)
+			qp.setBrush(QtCore.Qt.gray)
+			qp.drawRect(0, 0, self.width(), self.height())
+			# draw text
+			qp.setPen(QtCore.Qt.white)
+			qp.drawText(QRectF(0, 0, self.width(), self.height()), QtCore.Qt.AlignCenter, "OpenCV not available!")
+			return
 
 		if not self.is_connected:
 			# fill background grey

@@ -116,6 +116,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.boardDrillsWidget.holeSelected.connect(self.holeSelected)
 
 		self.pushButton_addPoint.clicked.connect(self.addTrafoPoint)
+		self.pushButton_removeLast.clicked.connect(self.removeLastTrafoPoints)
 		self.pushButton_removeAll.clicked.connect(self.removeAllTrafoPoints)
 
 		self.verticalSlider_cameraZoom.valueChanged.connect(self.zoomChanged)
@@ -126,6 +127,9 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.updateHolesTable()
 		self.cameraWidget.setZoom(self.cameraZoom)
 		self.verticalSlider_cameraZoom.setValue(self.cameraZoom*10)
+
+		if not self.cameraWidget.cameraAvailable():
+			self.verticalSlider_cameraZoom.setEnabled(False)
 
 
 		# check for LinuxCNC
@@ -223,6 +227,11 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.updateHolesTable()
 		#print(holeID)
 
+	def holeUnselect(self):
+		self.selectedHoles=list()
+		self.boardDrillsWidget.setSelectedHoles(self.selectedHoles)
+		self.updateHolesTable()
+
 
 	def addTrafoPoint(self):
 		#print("Move CNC over hole and select it!")
@@ -240,6 +249,10 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 
 		# get coordinate of selected hole
 		x, y, ID = self.selectedHoles[0]
+		if (x, y) in self.trafoPoints:
+			QMessageBox.warning(self, "Transformation", "Hole was already added.")
+			return
+
 		self.trafoPoints.append((x, y))
 
 		self.label_trafoPoints.setText(str(len(self.trafoPoints)))
@@ -248,12 +261,29 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			# 4 points are enough
 			self.pushButton_addPoint.setEnabled(False)
 
+		self.pushButton_removeLast.setEnabled(True)
+		self.pushButton_removeAll.setEnabled(True)
+
+		self.holeUnselect()
+
+
+	def removeLastTrafoPoints(self):
+		self.trafoPoints=self.trafoPoints[:-1]
+		self.trafoMachinePoints=self.trafoMachinePoints[:-1]
+		self.label_trafoPoints.setText(str(len(self.trafoPoints)))
+		self.pushButton_addPoint.setEnabled(True)
+		if len(self.trafoPoints) == 0:
+			self.pushButton_removeLast.setEnabled(False)
+			self.pushButton_removeAll.setEnabled(False)
+
 
 	def removeAllTrafoPoints(self):
 		self.trafoPoints=list()
 		self.trafoMachinePoints=list()
 		self.label_trafoPoints.setText("0")
 		self.pushButton_addPoint.setEnabled(True)
+		self.pushButton_removeLast.setEnabled(False)
+		self.pushButton_removeAll.setEnabled(False)
 
 
 	def getHole(self, holeID):

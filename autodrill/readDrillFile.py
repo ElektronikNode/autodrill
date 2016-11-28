@@ -24,7 +24,7 @@ import re
 
 def readDrillFile(filename):
 	try:
-		drillfile=open(filename, "r")
+		drillfile=open(filename, "rU")
 
 	except:
 		print("could not open file!")
