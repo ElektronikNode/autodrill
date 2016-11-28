@@ -101,7 +101,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.drillDepth=self.settings.value("drillDepth", 2.0).toDouble()[0]
 		self.drillSpacing=self.settings.value("drillSpacing", 5.0).toDouble()[0]
 		self.toolChangePos=(self.settings.value("toolChangePosX", 0.0).toDouble()[0], self.settings.value("toolChangePosY", 0.0).toDouble()[0], self.settings.value("toolChangePosZ", 20.0).toDouble()[0])
-		self.currentPath=self.settings.value("currentPath", "").toString()
+		self.currentFile=self.settings.value("currentFile", "").toString()
 
 
 
@@ -147,7 +147,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			return
 
 		self.cameraWidget.pause()
-		filename = str(QFileDialog.getOpenFileName(self, "select drill file", self.currentPath, "Drill Files (*.drl *.drd)").toUtf8())
+		filename = str(QFileDialog.getOpenFileName(self, "select drill file", self.currentFile, "Drill Files (*.drl *.drd)").toUtf8())
 		if filename:
 			# load file
 			logger.info("loading file: {0}".format(filename))
@@ -158,8 +158,8 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 				return
 
 
-			self.currentPath=QFileInfo(filename).absolutePath()
-			self.settings.setValue("currentPath", self.currentPath)
+			self.currentFile=QFileInfo(filename).absoluteFilePath()
+			self.settings.setValue("currentFile", self.currentFile)
 
 			self.fitHoles=fitHolesToDrills(self.rawHoles, self.drills, self.diaTol)
 			self.updateHolesTable()
@@ -338,7 +338,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			drillPath=findPath(T.transform(self.fitHoles[dia]))
 			#print(type(path))
 			#print(path)
-			writeGCode(dia, drillPath, self.currentPath, self.feedrate, self.drillDepth, self.drillSpacing, self.toolChangePos)
+			writeGCode(dia, drillPath, self.currentFile, self.feedrate, self.drillDepth, self.drillSpacing, self.toolChangePos)
 
 		QMessageBox.information(self, "G-Code", "Finished!")
 
