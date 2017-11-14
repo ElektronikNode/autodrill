@@ -151,7 +151,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			return
 
 		self.cameraWidget.pause()
-		filename = str(QFileDialog.getOpenFileName(self, "select drill file", self.currentFile, "Drill Files (*.drl *.drd)").toUtf8())
+		filename = str(QFileDialog.getOpenFileName(self, "select drill file", self.currentFile, "Drill Files (*.drl *.drd);;All Files (*.*)").toUtf8())
 		if filename:
 			# load file
 			logger.info("loading file: {0}".format(filename))
@@ -184,6 +184,8 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 
 		diaList=list(self.fitHoles.keys())
 		diaList.sort()
+		
+		nHoles=0;
 
 		for dia in diaList:
 			drillItem = QTreeWidgetItem()
@@ -197,11 +199,14 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 				holeItem.setText(2, "{:3.1f}".format(x))
 				holeItem.setText(3, "{:3.1f}".format(y))
 				drillItem.addChild(holeItem)
+				nHoles+=1
 
 				if hole in self.selectedHoles:
 					self.treeWidget_holes.setCurrentItem(holeItem)
 					#self.treeWidget_holes.expandItem(drillItem)
 					#self.treeWidget_holes.scrollToItem(holeItem)
+					
+		self.label_totalHoles.setText(str(nHoles));
 
 		if not self.selectedHoles:
 			self.treeWidget_holes.setCurrentItem(None)

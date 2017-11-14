@@ -33,18 +33,40 @@ def readDrillFile(filename):
 	tools={}
 	holes={}
 
-	unit="metric"		# assume mm units by default
-	zeroMode="trailing"	# assume trailing zeros by default
+	unit="metric"				# "metric" or "inch" units
+	zeroMode="trailing"			# "leading" or "trailing" zeros are kept
+	leftDigits=3				# digits left of decimal point
+	rightDigits=3				# digits right of decimal point
+	fileFormatSpecified=False	# True if the line ;FILE_FORMAT=... was found
 
-	ID=0
+	ID=0						# ID of hole
+	
+	x=0							# last coordinates
+	y=0
 
 	for line in drillfile:
+		
+		# read "FILE_FORMAT"
+		mo=re.search(r"^;FILE_FORMAT=(\d+):(\d+)$", line)
+		if mo:
+			fileFormatSpecified=True
+			leftDigits=int(mo.group(1))
+			rightDigits=int(mo.group(2))
 
 		# read unit
 		if ("M71" in line) or ("METRIC" in line):
 			unit="metric"
+			# default metric format: 000.000
+			if not fileFormatSpecified:
+				leftDigits=3
+				rightDigits=3
+				
 		if ("M72" in line) or ("INCH" in line):
 			unit="inch"
+			#default inch format: 00.0000
+			if not fileFormatSpecified:
+				leftDigits=2
+				rightDigits=4
 
 		# read zeroMode
 		if "LZ" in line:
@@ -54,54 +76,95 @@ def readDrillFile(filename):
 
 
 		# read tool table
-		mo=re.search(r"^T(\d+)C(\d*\.\d+)$", line)
+		mo=re.search(r"^T(\d+)(F(\d+))?(S(\d+))?C(\d*\.\d*)$", line)
 		if mo:
 			#print mo.group()
 			toolNum=int(mo.group(1))
-			toolDia=float(mo.group(2))
+			toolDia=float(mo.group(6))
 			if(unit=="inch"):
 				toolDia=toolDia*25.4
 			#print toolNum, toolDia
 			tools[toolNum]=toolDia
-
 			holes[toolDia]=set()
 
 
 		# tool change
 		mo=re.search(r"^T(\d+)$", line)
 		if mo:
-			currentTool=int(mo.group(1))
+			tool=int(mo.group(1))
+			if tool in tools:
+				currentTool=tool
+			
+		
+		# read coordinates
+		coordinateFound=False
 
-		# read coordinates (with decimal point)
-		mo=re.search(r"^X(-?\d+\.\d+)Y(-?\d+\.\d+)$", line)
-		if mo and currentTool in tools:
-			x=float(mo.group(1))
-			y=float(mo.group(2))
-			if unit=="inch":
-				x=x*25.4
-				y=y*25.4
-			holes[tools[currentTool]].add((x, y, ID))
-
-		# read coordinates (without decimal point)
-		mo=re.search(r"^X(-?\d+)Y(-?\d+)$", line)
-		if mo and currentTool in tools:
-			strX=mo.group(1)
-			strY=mo.group(2)
+		# read X without decimal point
+		mo=re.search(r"X(-?\d+)", line)
+		if mo:
+			s=mo.group(1)
+			coordinateFound=True
+			
+			# for leading zeros we need to append the missing trailing zeros
 			if zeroMode=="leading":
-				strX=strX.ljust(6, '0')		# there are always 6 digits
-				strY=strY.ljust(6, '0')
+				s=s.ljust(leftDigits+rightDigits, '0')
+			
+			# convert to float and correct decimal point
+			co=float(s)/pow(10, rightDigits)
+			
+			# conversion from inch to metric
+			if unit=="inch":
+				x=co*25.4
+			else:
+				x=co
+				
+		# read Y without decimal point
+		mo=re.search(r"Y(-?\d+)", line)
+		if mo:
+			s=mo.group(1)
+			coordinateFound=True
+			
+			# for leading zeros we need to append the missing trailing zeros
+			if zeroMode=="leading":
+				s=s.ljust(leftDigits+rightDigits, '0')
+			
+			# convert to float and correct decimal point
+			co=float(s)/pow(10, rightDigits)
+			
+			# conversion from inch to metric
+			if unit=="inch":
+				y=co*25.4
+			else:
+				y=co
+				
+		# read X with decimal point
+		mo=re.search(r"X(-?\d*\.\d*)", line)
+		if mo:
+			co=float(mo.group(1))
+			coordinateFound=True
+			
+			# conversion from inch to metric
+			if unit=="inch":
+				x=co*25.4
+			else:
+				x=co
+					
+		# read Y with decimal point
+		mo=re.search(r"Y(-?\d*\.\d*)", line)
+		if mo:
+			co=float(mo.group(1))
+			coordinateFound=True
+			
+			# conversion from inch to metric
+			if unit=="inch":
+				y=co*25.4
+			else:
+				y=co
 
-			x=float(strX)
-			y=float(strY)
-			if(unit=="metric"):
-				x=x/1000		# metric format: 000.000
-				y=y/1000
-			elif(unit=="inch"):
-				x=x/10000*25.4	# inch format: 00.0000
-				y=y/10000*25.4
-
+		
+		if coordinateFound:	
+			#print("read hole: "+str(tools[currentTool])+", "+str(x)+", "+str(y))
 			holes[tools[currentTool]].add((x, y, ID))
-
-		ID=ID+1
+			ID=ID+1
 
 	return holes
