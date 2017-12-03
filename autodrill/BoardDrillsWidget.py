@@ -126,7 +126,14 @@ class BoardDrillsWidget(QWidget):
 
 	def drawSingleHole(self, qp, pos, drillsize, selected):
 		# set color of hole
-		color=QtGui.QColor.fromHsv(int(drillsize*255/3), 255, 196)
+		dias=self.allHoles.keys()
+		dMin=min(dias)
+		dMax=max(dias)
+		hue=180
+		if(dMin != dMax):
+			hue=(drillsize-dMin)/(dMax-dMin)*240+60
+		
+		color=QtGui.QColor.fromHsv(hue, 255, 196)
 
 		if selected:
 			#print("selected")
