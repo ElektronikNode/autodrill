@@ -111,7 +111,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.groupBox_trafo, 1, 2, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 868, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 868, 22))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuFile.setObjectName(_fromUtf8("menuFile"))
@@ -159,6 +159,6 @@ class Ui_MainWindow(object):
         self.action_loadDrillFile.setText(_translate("MainWindow", "&Load Drill File", None))
         self.action_dialogDrills.setText(_translate("MainWindow", "&Drills", None))
         self.action_dialogCamera.setText(_translate("MainWindow", "&Camera Settings", None))
-        self.action_writeGCode.setText(_translate("MainWindow", "&Write G-Code Files", None))
-        self.action_dialogDrillParameter.setText(_translate("MainWindow", "Drill Parameter", None))
+        self.action_writeGCode.setText(_translate("MainWindow", "&Write G-Code File", None))
+        self.action_dialogDrillParameter.setText(_translate("MainWindow", "Drill Parameters", None))
 

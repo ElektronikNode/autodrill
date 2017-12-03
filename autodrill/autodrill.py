@@ -7,7 +7,7 @@ the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
 autodrill is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
+but WITHOUT ANY WARRANTY without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
@@ -55,12 +55,14 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 	def __init__(self):
 		QMainWindow.__init__(self)
 
+
 		# for QSettings
-		QCoreApplication.setOrganizationName("Feichtinger");
-		QCoreApplication.setApplicationName("Autodrill");
+		QCoreApplication.setOrganizationName("Autodrill")
+		QCoreApplication.setApplicationName("Autodrill")
 
 		self.updateTimer=QTimer()
-		self.updateTimer.start(50);
+		self.updateTimer.start(50)
+
 
 		# set up the user interface from Designer.
 		self.setupUi(self)
@@ -81,7 +83,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 
 		# init local variables
 		self.rawHoles = {}		# dictionary: holes sorted by diameter (from drill file)
-		self.fitHoles = {}		# dictionary: holes fitted to available drill diameters
+		self.fitHoles = {}		# dictionary: dia -> set of holes, holes fitted to available drill diameters
 
 		self.selectedHoles=list()		# list of selected holes
 		self.trafoPoints=list()			# points used for transformation (file coordinates)
@@ -90,19 +92,21 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 
 		# load settings (and set default values)
 		self.settings=QSettings()
-		self.drills=list()
+		self.drills={}
+		
+		diaList=self.settings.value("drillsDia", "").toList()
+		toolNrList=self.settings.value("drillsToolNr", "").toList()
 
-		for item in self.settings.value("drills", "").toList():
-			self.drills.append(item.toDouble()[0])
+		for i in range(len(diaList)):
+			self.drills[diaList[i].toDouble()[0]] = toolNrList[i].toInt()[0]
+		
 		self.diaTol=self.settings.value("diaTol", 0.05).toDouble()[0]
 		self.cameraZoom=self.settings.value("cameraZoom", 1.0).toDouble()[0]
 		self.cameraOffset=(self.settings.value("cameraOffsetX", 0.0).toDouble()[0], self.settings.value("cameraOffsetY", 0.0).toDouble()[0])
 		self.feedrate=self.settings.value("feedrate", 10.0).toDouble()[0]
 		self.drillDepth=self.settings.value("drillDepth", 2.0).toDouble()[0]
 		self.drillSpacing=self.settings.value("drillSpacing", 5.0).toDouble()[0]
-		self.toolChangePos=(self.settings.value("toolChangePosX", 0.0).toDouble()[0], self.settings.value("toolChangePosY", 0.0).toDouble()[0], self.settings.value("toolChangePosZ", 20.0).toDouble()[0])
 		self.currentFile=self.settings.value("currentFile", "").toString()
-
 
 
 		# connect signals and slots
@@ -123,6 +127,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 
 		self.updateTimer.timeout.connect(self.updatePositionLabel)
 
+
 		# init widgets
 		self.updateHolesTable()
 		self.cameraWidget.setZoom(self.cameraZoom)
@@ -140,6 +145,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		if not LinuxCNCRunning():
 			QMessageBox.information(self, "LinuxCNC", "Please start LinuxCNC now.")
 
+
 		# for jogging
 		self.jogSpeed=SLOWJOG
 		self.jogAxes=[0, 0, 0]
@@ -151,7 +157,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			return
 
 		self.cameraWidget.pause()
-		filename = str(QFileDialog.getOpenFileName(self, "select drill file", self.currentFile, "Drill Files (*.drl *.drd);;All Files (*.*)").toUtf8())
+		filename = str(QFileDialog.getOpenFileName(self, "select drill file", self.currentFile, "Drill Files (*.drl *.drd)All Files (*.*)").toUtf8())
 		if filename:
 			# load file
 			logger.info("loading file: {0}".format(filename))
@@ -185,7 +191,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		diaList=list(self.fitHoles.keys())
 		diaList.sort()
 		
-		nHoles=0;
+		nHoles=0
 
 		for dia in diaList:
 			drillItem = QTreeWidgetItem()
@@ -206,7 +212,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 					#self.treeWidget_holes.expandItem(drillItem)
 					#self.treeWidget_holes.scrollToItem(holeItem)
 					
-		self.label_totalHoles.setText(str(nHoles));
+		self.label_totalHoles.setText(str(nHoles))
 
 		if not self.selectedHoles:
 			self.treeWidget_holes.setCurrentItem(None)
@@ -308,11 +314,11 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 
 			# read back values
 			self.drills=self.dialogDrills.getDrills()
-			self.drills.sort()
 			self.diaTol=self.dialogDrills.getHoleTol()
 
 			# save to settings
-			self.settings.setValue("drills", self.drills)
+			self.settings.setValue("drillsDia", self.drills.keys())
+			self.settings.setValue("drillsToolNr", self.drills.values())
 			self.settings.setValue("diaTol", self.diaTol)
 
 			# fit holes
@@ -330,22 +336,16 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 		self.dialogDrillParameter.setFeedrate(self.feedrate)
 		self.dialogDrillParameter.setDepth(self.drillDepth)
 		self.dialogDrillParameter.setSpacing(self.drillSpacing)
-		self.dialogDrillParameter.setToolChangePos(self.toolChangePos)
 
 		self.cameraWidget.pause()
 		if self.dialogDrillParameter.exec_() == QDialog.Accepted:
 			self.feedrate=self.dialogDrillParameter.getFeedrate()
 			self.drillDepth=self.dialogDrillParameter.getDepth()
 			self.drillSpacing=self.dialogDrillParameter.getSpacing()
-			self.toolChangePos=self.dialogDrillParameter.getToolChangePos()
 
 			self.settings.setValue("feedrate", self.feedrate)
 			self.settings.setValue("drillDepth", self.drillDepth)
 			self.settings.setValue("drillSpacing", self.drillSpacing)
-			x, y, z=self.toolChangePos
-			self.settings.setValue("toolChangePosX", x)
-			self.settings.setValue("toolChangePosY", y)
-			self.settings.setValue("toolChangePosZ", z)
 
 		self.cameraWidget.resume()
 
@@ -362,6 +362,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 
 		self.cameraWidget.resume()
 
+
 	def action_writeGCode_triggered(self):
 
 		if not len(self.trafoPoints) in {3, 4}:
@@ -369,11 +370,15 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			return
 
 		T=bilinearTrafo(self.trafoPoints, self.trafoMachinePoints)
+		paths={}
 		for dia in self.fitHoles:
-			drillPath=findPath(T.transform(self.fitHoles[dia]))
-			#print(type(path))
-			#print(path)
-			writeGCode(dia, drillPath, self.currentFile, self.feedrate, self.drillDepth, self.drillSpacing, self.toolChangePos)
+			toolNr=self.drills[dia]
+			paths[toolNr]=findPath(T.transform(self.fitHoles[dia]))
+			
+		fi=QFileInfo(self.currentFile)
+		filename=fi.absolutePath() + "/" + fi.completeBaseName() + ".ngc"
+		
+		writeGCode(paths, filename, self.feedrate, self.drillDepth, self.drillSpacing)
 
 		QMessageBox.information(self, "G-Code", "Finished!")
 
@@ -490,12 +495,12 @@ def fitHolesToDrills(holes, drills, tol):
 		return {}
 
 	diaList=list(holes.keys())		# list of hole diameters
-	drillDiaList=list(drills)		# list of drill diameters
+	drillDiaList=drills.keys()		# list of drill diameters
 
 	diaList.sort()
 	drillDiaList.sort()
 
-	fitHoles={}							# dict of holes with assigned diameters
+	fitHoles={}							# dict drillDia -> set of holes fitted to drill diameter
 	drillNo=0							# index of current drill
 	drillDia=drillDiaList[0]			# current drill diameter
 
@@ -510,7 +515,7 @@ def fitHolesToDrills(holes, drills, tol):
 			drillNo=drillNo+1
 			drillDia=drillDiaList[drillNo]
 
-		# drill fits to hole
+		# drillDia fits to hole
 
 		# create hole set if not existing
 		if drillDia not in fitHoles:

@@ -24,19 +24,20 @@ class DialogDrills(QDialog, Ui_DialogDrills):
 	def __init__(self, parent=None):
 		QDialog.__init__(self, parent)
 
-		# Set up the user interface from Designer.
+		# set up the user interface from Designer.
 		self.setupUi(self)
 
 		self.tableWidget_drills.cellChanged.connect(self.cellChanged)
 		self.pushButton_OK.clicked.connect(self.OK_clicked)
 		self.pushButton_cancel.clicked.connect(self.cancel_clicked)
 
-		self.drills=list()
-		self.diaTol=None
+		self.drills={}		# dictionary diameter ->toolNr.
+		self.diaTol=None	# diameter tolerance
 
 
 	def cellChanged(self, row, column):
 
+		# append rows if necessary
 		rowCount=self.tableWidget_drills.rowCount()
 		text=self.tableWidget_drills.item(row, column).text()
 
@@ -45,17 +46,31 @@ class DialogDrills(QDialog, Ui_DialogDrills):
 
 	def OK_clicked(self):
 		try:
-			drills=list()
+			# try to read diameters and toolNrs from table
+			drills={}
 			for row in range(self.tableWidget_drills.rowCount()):
-				if self.tableWidget_drills.item(row, 0):
-					text=self.tableWidget_drills.item(row, 0).text()
-					if text:
-						dia=float(text)
-						if dia>0:
-							drills.append(dia)
+				
+				if self.tableWidget_drills.item(row, 0) and self.tableWidget_drills.item(row, 1):
+					
+					diaStr=self.tableWidget_drills.item(row, 0).text()
+					toolNrStr=self.tableWidget_drills.item(row, 1).text()
+					
+					if diaStr and toolNrStr:
+						dia=float(diaStr)
+						toolNr=int(toolNrStr)
+						
+						# check for positive toolNr and dia
+						if dia>0 and toolNr>0:
+							
+							# check for double drills 
+							if not dia in drills:
+								drills[dia]=toolNr
+							else:
+								raise
 						else:
 							raise
-
+							
+			# try to read diameter tolerance
 			diaTol=float(self.lineEdit_holeTol.text())
 			if diaTol<0:
 				raise
@@ -66,6 +81,7 @@ class DialogDrills(QDialog, Ui_DialogDrills):
 				raise
 
 			self.accept()
+			
 		except:
 			QMessageBox.critical(self, "Invalid Input", "Please enter positive numbers only. Define at least one drill.")
 
@@ -82,12 +98,19 @@ class DialogDrills(QDialog, Ui_DialogDrills):
 	def setDrills(self, drills):
 		self.drills=drills
 
+		# write drills back to table, sorted by toolNr
 		self.tableWidget_drills.clearContents()
 		self.tableWidget_drills.setRowCount(len(drills)+1)
 
-		for i in range(len(drills)):
-			item=QTableWidgetItem(str(drills[i]))
+		dias=drills.keys()
+		dias.sort()
+		
+		for i in range(len(dias)):
+			dia=dias[i]
+			item=QTableWidgetItem(str(dia))
 			self.tableWidget_drills.setItem(i, 0, item)
+			item=QTableWidgetItem(str(drills[dia]))
+			self.tableWidget_drills.setItem(i, 1, item)
 
 	def setHoleTol(self, diaTol):
 		self.diaTol=diaTol

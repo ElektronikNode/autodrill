@@ -48,13 +48,6 @@ class DialogDrillParameter(QDialog, Ui_DialogDrillParameter):
 	def setSpacing(self, spacing):
 		self.lineEdit_spacing.setText("{:.2f}".format(spacing))
 
-	def setToolChangePos(self, toolChangePos):
-		x, y, z = toolChangePos
-		self.lineEdit_toolChangePosX.setText("{:.2f}".format(x))
-		self.lineEdit_toolChangePosY.setText("{:.2f}".format(y))
-		self.lineEdit_toolChangePosZ.setText("{:.2f}".format(z))
-
-
 	def getFeedrate(self):
 		return float(self.lineEdit_feedrate.text())
 
@@ -64,21 +57,11 @@ class DialogDrillParameter(QDialog, Ui_DialogDrillParameter):
 	def getSpacing(self):
 		return float(self.lineEdit_spacing.text())
 
-	def getToolChangePos(self):
-		x=float(self.lineEdit_toolChangePosX.text())
-		y=float(self.lineEdit_toolChangePosY.text())
-		z=float(self.lineEdit_toolChangePosZ.text())
-		return (x, y, z)
-
-
 	def OK_clicked(self):
 		try:
 			feedrate=float(self.lineEdit_feedrate.text())
 			depth=float(self.lineEdit_depth.text())
 			spacing=float(self.lineEdit_spacing.text())
-			float(self.lineEdit_toolChangePosX.text())
-			float(self.lineEdit_toolChangePosY.text())
-			float(self.lineEdit_toolChangePosZ.text())
 
 			if feedrate<=0 or depth<0 or spacing<0:
 				raise

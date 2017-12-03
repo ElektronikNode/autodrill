@@ -17,52 +17,54 @@ along with autodrill. If not, see < http://www.gnu.org/licenses/ >.
 
 from PyQt4.QtCore import QFile, QFileInfo, QIODevice
 
-def writeGCode(dia, drillPath, originalFilename, feedrate, depth, spacing, toolChangePosition):
 
-	fi=QFileInfo(originalFilename)
-	filename=fi.absolutePath() + "/" + fi.completeBaseName() + str(dia) + ".ngc"
-	#filename = str(filename.toUtf8())
-	file=QFile(filename)
+def writeGCode(paths, filename, feedrate, depth, spacing):
 	
-	file.open(QIODevice.WriteOnly)
-
-
+	outfile=QFile(filename)
+	
+	outfile.open(QIODevice.WriteOnly)
+	
 	# initial G-codes
-	file.write("G90\n")									# set to absolut positioning
-	#file.write("G21\n")								# use millimeters
-	file.write("F{:f}\n".format(feedrate*60))			# set feedrate (mm/min)
-
-
-	x, y, z = toolChangePosition
-	file.write("G00 Z{:.3f}\n".format(z))									# first go up for savety
+	outfile.write("G90\n")									# set to absolut positioning
+	outfile.write("G21\n")									# units: millimeters
+	outfile.write("F{:f}\n".format(feedrate*60))			# set feedrate (mm/min)
 	
-	x, y = drillPath[0]
-	file.write("G00 X{:.3f} Y{:.3f}\n".format(x, y))						# place drill over first hole
-	file.write("G00 Z{:.3f}\n".format(spacing))								# go down
+	tools=paths.keys()
+	tools.sort()											# begin with smallest drill
 	
-	file.write("M03\n")														# turn on spindle
-	file.write("G04 P1.0\n")												# wait 1 second (to turn up spindle)
+	for toolNr in tools:
+		writeDrillPath(outfile, toolNr, paths[toolNr], depth, spacing)
+	
+	outfile.write("T0\n".format(toolNr))					# select no tool
+	outfile.write("M06\n")									# change tool
+	outfile.write("M02\n")									# end of program
+	outfile.close()
+	
+	
+def writeDrillPath(outfile, toolNr, drillPath, depth, spacing):
+
+	outfile.write("T{:d}\n".format(toolNr))							# select tool
+	outfile.write("M06\n")											# change tool
+	outfile.write("G00 Z{:.3f}\n".format(spacing))					# first go up to spacing height
+	
+	outfile.write("M03\n")											# turn on spindle
+	outfile.write("G04 P1.0\n")										# wait 1 second (to turn up spindle)
 
 	# start drilling path
 	for p in drillPath:
 		x, y = p
 
 		# place drill over hole
-		file.write("G00 X{:.3f} Y{:.3f}\n".format(x, y))
+		outfile.write("G00 X{:.3f} Y{:.3f}\n".format(x, y))
 
 		# drill
-		file.write("G01 Z{:.3f}\n".format(-depth))		# drill with feedrate
-		#file.write("G00 Z{:.3f}\n".format(-depth))		# drill as fast as possible
+		outfile.write("G01 Z{:.3f}\n".format(-depth))		# drill with feedrate
+		#outfile.write("G00 Z{:.3f}\n".format(-depth))		# drill as fast as possible
 
 		# lift drill
-		file.write("G00 Z{:.3f}\n".format(spacing))
+		outfile.write("G00 Z{:.3f}\n".format(spacing))
 
 
 	# final G-codes
-	file.write("M05\n")												# turn off spindle
-	x, y, z = toolChangePosition
-	file.write("G00 Z{:.3f}\n".format(z))							# first go up
-	file.write("G00 X{:.3f} Y{:.3f}\n".format(x, y))				# go back to drill change position
-	file.write("M02\n")												# end of program
+	outfile.write("M05\n")									# turn off spindle
 
-	file.close()

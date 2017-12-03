@@ -194,7 +194,7 @@
      <x>0</x>
      <y>0</y>
      <width>868</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -233,12 +233,12 @@
   </action>
   <action name="action_writeGCode">
    <property name="text">
-    <string>&amp;Write G-Code Files</string>
+    <string>&amp;Write G-Code File</string>
    </property>
   </action>
   <action name="action_dialogDrillParameter">
    <property name="text">
-    <string>Drill Parameter</string>
+    <string>Drill Parameters</string>
    </property>
   </action>
  </widget>

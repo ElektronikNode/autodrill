@@ -1,5 +1,4 @@
 * fix zooming
 * camera selection
 * command to move camera over selected point
-* generate only one ngc-file and let linuxcnc do the tool change
 * add a logo
