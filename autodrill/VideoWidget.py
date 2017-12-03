@@ -26,11 +26,11 @@ from logger import logger
 logger = logger.getChild(__name__)
 
 try:
-    import cv
-    opencv_available = True
+	import cv
+	opencv_available = True
 except ImportError:
-    opencv_available = False
-    logger.warning("could not find OpenCV installation")
+	opencv_available = False
+	logger.warning("could not find OpenCV installation")
 
 class IplQImage(QImage):
 	"""
@@ -76,7 +76,7 @@ class VideoWidget(QWidget):
 		# Take one frame to query height
 		frame = cv.QueryFrame(self._capture)
 		if frame is None:
-			QMessageBox.information(self, "Could not open camera", "Please configure/enable camera");
+			QMessageBox.information(self, "Could not open camera", "Please configure/enable camera")
 			logger.warning("could not open camera")
 			return
 
