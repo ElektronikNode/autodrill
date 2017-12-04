@@ -1,5 +1,5 @@
 # Autodrill
-A tool for camera assisted drilling of PCBs using LinuxCNC.
+Camera assisted drilling of PCBs using LinuxCNC.
 
 ## Background and Basic Idea
 Making a prototype PCB can be an ambitious task. Typically the process involves the following steps:
@@ -32,7 +32,7 @@ To run Autodrill:
 	
 
 ## Machine Setup
-In order to use Autodrill you need a CNC mill (or router) controlled by LinuxCNC and a camera mounted next to the spindle. Choose a camera that is able to focus at small distance. Ideally the camera should be in focus when a drill bit mounted in the spindle is still some millimeters above the PCB and all obstacles. This way you should be save to pan over the PCB without crashing the drill bit. 
+In order to use Autodrill you need a CNC mill (or router) controlled by LinuxCNC and a camera mounted next to the spindle. Choose a camera that is able to focus at small distance. Ideally the camera should be in focus when a drill bit that is mounted in the spindle is still some millimeters above the PCB and all obstacles. This way you should be save to pan over the PCB without crashing the drill bit. 
 
 Although the camera axis should be parallel to the spindle, the alignment is not super critical as long as the vertical distance from the camera to the PCB is always the same. To calibrate the camera-to-spindle offset simply drill a test hole, find it with the camera and save the coordinates.
 
