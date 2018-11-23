@@ -157,7 +157,7 @@ class AutodrillMainWindow(QMainWindow, Ui_MainWindow):
 			return
 
 		self.cameraWidget.pause()
-		filename = str(QFileDialog.getOpenFileName(self, "select drill file", self.currentFile, "Drill Files (*.drl *.drd)All Files (*.*)").toUtf8())
+		filename = str(QFileDialog.getOpenFileName(self, "select drill file", self.currentFile, "Drill Files (*.drl *.drd);;All Files (*.*)").toUtf8())
 		if filename:
 			# load file
 			logger.info("loading file: {0}".format(filename))
